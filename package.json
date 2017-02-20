@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "react": "^15.4.2",
+    "react-bootstrap": "^0.30.7",
+    "react-bootstrap-multiselect": "^2.3.0",
     "react-dom": "^15.4.2",
     "react-router": "^3.0.2",
     "axios": "^0.15.3",
