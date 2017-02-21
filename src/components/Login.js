@@ -17,7 +17,7 @@ export class Login extends Component {
         return (
             <Grid container centered columns={2}>
                 <Grid.Column>
-                    <Segment color="olive" style={{ marginTop: '40px' }}>
+                    <Segment color="blue" style={{ marginTop: '40px' }}>
                         <Form onSubmit={this.onSubmit}>
                             <Form.Field>
                                 <label>Login</label>
@@ -28,7 +28,7 @@ export class Login extends Component {
                                 <input placeholder='Type your password' />
                             </Form.Field>
                             <Form.Field style={{ textAlign: 'right' }}>
-                                <Button type='submit' color="olive">Submit</Button>
+                                <Button type='submit' color="blue">Submit</Button>
                             </Form.Field>
                         </Form>
                     </Segment>

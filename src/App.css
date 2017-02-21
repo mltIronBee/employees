@@ -1,16 +1,16 @@
 body {
   margin: 0;
   padding: 0;
+  background: #fafafa;
 }
 
 header {
-  background-color: #222;
+  background-color: #636363;
   height: 40px;
   padding: 10px 0;
-  color: white;
   text-align: center;
-  font-size: 24px;
-  color: #cbe218;
+  font-size: 20px;
+  color: #80ccff;
 }
 
 .grid {
