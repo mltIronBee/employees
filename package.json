@@ -11,7 +11,7 @@
   "dependencies": {
     "axios": "^0.15.3",
     "basic-auth": "^1.1.0",
-    "basic-authorization-header": "^0.2.7",
+    "basic-auth-header": "^1.0.1",
     "body-parser": "^1.16.0",
     "cors": "^2.8.1",
     "express": "^4.14.1",
