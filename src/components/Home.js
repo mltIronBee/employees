@@ -90,8 +90,8 @@ export class Home extends Component {
                 <Table.Cell>{ item.position }</Table.Cell>
                 <Table.Cell>{ item.startedAt }</Table.Cell>
                 <Table.Cell>
-                    <Icon name="write" size="large" link />
-                    <Icon name="delete" size="large" link/>
+                    <Icon name="write" size="large" link color="blue" />
+                    <Icon name="delete" size="large" link color="blue" />
                 </Table.Cell>
             </Table.Row>
         ));
