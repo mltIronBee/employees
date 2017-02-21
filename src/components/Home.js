@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 import { Grid, Table, Dropdown, Icon } from 'semantic-ui-react';
+import http, { setAuthHeader } from '../helpers/http';
 
 export class Home extends Component {
 
@@ -34,10 +36,20 @@ export class Home extends Component {
         filtered: []
     };
 
-    hasItem = (array, searchItem, propName = null) => {
+    componentDidMount() {
+        const key = localStorage.getItem('Authorization');
+
+        if(key) {
+            setAuthHeader(key);
+        } else {
+            browserHistory.push('/login');
+        }
+    }
+
+    hasItem = (array, searchItem) => {
 
         return array.some(item => {
-            return propName ? item[propName] === searchItem : item === searchItem;
+            return item['value'] === searchItem;
         });
 
     };
@@ -49,7 +61,7 @@ export class Home extends Component {
 
             employee.skills.forEach(skill => {
 
-                if(!this.hasItem(options, skill, 'value')) {
+                if(!this.hasItem(options, skill)) {
                     options.push({
                         text: skill,
                         value: skill

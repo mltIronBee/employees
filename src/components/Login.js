@@ -54,6 +54,7 @@ export class Login extends Component {
                                 <input type="text"
                                        placeholder='Type your login'
                                        name="login"
+                                       value={ this.state.login }
                                        onChange={(e) => { this.setState({ login: e.target.value }) }} />
                             </Form.Field>
                             <Form.Field>
@@ -61,6 +62,7 @@ export class Login extends Component {
                                 <input type="password"
                                        placeholder='Type your password'
                                        name="password"
+                                       value={ this.state.password }
                                        onChange={(e) => { this.setState({ password: e.target.value }) }}/>
                             </Form.Field>
                             <Form.Field style={{ textAlign: 'right' }}>
