@@ -20,10 +20,6 @@ app.use( cors({ origin: '*' }) );
 db.initializeDb();
 
 // RESTful API
-app.get('/', (req, res) => {
-    res.send('works');
-});
-
 
 app.get('/login', (req, res) => {
     let { name, pass } = auth(req);
