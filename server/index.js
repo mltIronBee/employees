@@ -72,7 +72,7 @@ app.get('/employees', (req, res) => {
 
 app.post('/employee/update', (req, res) => {
 
-    db.updateEmployeeData(req.body.id, req.body)
+    db.updateEmployeeData(req.body._id, req.body)
         .then(result => {
             res.send(result);
         })
