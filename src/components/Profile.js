@@ -180,11 +180,12 @@ export class Profile extends Component {
                                        centered />
                                 {
                                     !this.state.readOnly && (
-                                        <div style={{textAlign: "center", cursor: "pointer"}}>
-                                            <label>
+                                        <div style={{textAlign: "center"}}>
+                                            <label className="label-image" htmlFor="image" >
                                                 <Icon name="download" /> Download profile image
+
                                             </label>
-                                            <input type="file" className="upload-image" onChange={this.onUpload}/>
+                                            <input type="file" className="upload-image" id="image" onChange={this.onUpload}/>
                                         </div>
                                     )
                                 }

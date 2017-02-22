@@ -27,3 +27,13 @@ header i {
   overflow: hidden;
   z-index: -1;
 }
+
+.label-image {
+  display: block;
+  cursor: pointer;
+  transition: color .3s ease;
+}
+
+.label-image:hover {
+  color: #80ccff;
+}
