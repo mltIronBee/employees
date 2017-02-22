@@ -25,7 +25,7 @@ const EmployeeSchema = new Schema({
        type: Date
     },
 
-    employeeImageUrl: {
+    imageUrl: {
         type: String
     }
 });

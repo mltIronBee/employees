@@ -37,14 +37,15 @@ export class Profile extends Component {
             })
                 .then(({ data }) => {
 
-                    this.setState({
+                    this.setState(prevState => ({
                         _id: data._id,
                         firstName: data.firstName,
                         lastName: data.lastName,
                         position: data.position,
                         startedAt: new Date(data.startedAt).toISOString().split('T')[0],
-                        skills: data.skills
-                    });
+                        skills: data.skills,
+                        imageSrc: !data.imageUrl ? prevState.imageSrc : data.imageUrl
+                    }));
                 })
                 .catch(err => {
                     console.log(err);
@@ -115,7 +116,7 @@ export class Profile extends Component {
             data.append('_id', _id);
         }
 
-        http.post(requestUrl, data )
+        http.post(requestUrl, data)
             .then(res => {
                 console.log(res);
                 this.setState({ readOnly: true });
@@ -180,7 +181,7 @@ export class Profile extends Component {
                                        centered />
                                 {
                                     !this.state.readOnly && (
-                                        <div style={{textAlign: "center"}}>
+                                        <div style={{textAlign: "center", marginTop: "20px"}}>
                                             <label className="label-image" htmlFor="image" >
                                                 <Icon name="download" /> Download profile image
 

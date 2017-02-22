@@ -2,10 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import multer from 'multer';
+import random from 'randomstring';
+import mime from 'mime';
 import auth from 'basic-auth';
 
 import * as db from './db/db';
-import { serverPort } from '../config.json';
+import { serverPort, apiPrefix } from '../config.json';
 
 // Initialization of express application
 const app = express();
@@ -19,6 +21,23 @@ app.use( bodyParser.json() );
 app.use( cors({ origin: '*' }) );
 
 db.initializeDb();
+
+// Set up multer for uploading images
+let currentUploadedImageName = '';
+
+const storage = multer.diskStorage({
+    destination(req, file, callback) {
+        callback(null, './public/uploads');
+    },
+
+    filename(req, file, callback) {
+        currentUploadedImageName = `${random.generate()}.${mime.extension(file.mimetype)}`;
+
+        callback(null, currentUploadedImageName);
+    }
+});
+
+const multerMiddleware = multer({ storage }).single('image');
 
 // RESTful API
 app.get('/login', (req, res) => {
@@ -37,14 +56,20 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.post('/employee/create', multer().array(), (req, res) => {
+app.post('/employee/create', multerMiddleware, (req, res) => {
 
-    db.createEmployee(req.body)
+    let { body: userData } = req;
+
+    userData.imageUrl = currentUploadedImageName ? `/uploads/${currentUploadedImageName}` : '';
+
+    db.createEmployee(userData)
         .then(result => {
+            currentUploadedImageName = '';
             res.send(result);
         })
         .catch(err => {
-            res.status(401).send(err);
+            currentUploadedImageName = '';
+            res.status(400).send(err);
         });
 });
 
@@ -55,7 +80,7 @@ app.get('/employee', (req, res) => {
             res.send(employee);
         })
         .catch(err => {
-            res.status(401).send(err);
+            res.status(400).send(err);
         });
 });
 
@@ -66,18 +91,24 @@ app.get('/employees', (req, res) => {
             res.send(result);
         })
         .catch(err => {
-            res.status(401).send(err);
+            res.status(400).send(err);
         });
 });
 
-app.post('/employee/update', multer().array(),(req, res) => {
+app.post('/employee/update', multerMiddleware, (req, res) => {
 
-    db.updateEmployeeData(req.body._id, req.body)
+    let { body: userData } = req;
+
+    userData.imageUrl = `/uploads/${currentUploadedImageName}`;
+
+    db.updateEmployeeData(userData._id, userData)
         .then(result => {
+            currentUploadedImageName = '';
             res.send(result);
         })
         .catch(err => {
-            res.status(401).send(err);
+            currentUploadedImageName = '';
+            res.status(400).send(err);
         })
 });
 
@@ -88,7 +119,7 @@ app.post('/employee/delete', (req, res) => {
            res.send(result);
        })
        .catch(err => {
-           res.status(401).send(err);
+           res.status(400).send(err);
        })
 });
 
