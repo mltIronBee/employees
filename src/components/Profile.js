@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import basic from 'basic-auth-header';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config.json';
 import { Grid, Form, Button, Icon, Table, Segment, Image } from 'semantic-ui-react';
@@ -24,7 +23,7 @@ export class Profile extends Component {
 
         http.get(`${apiPrefix}/employee`, {
             params: {
-                _id: '58ab1482d49ab10f188edbd1'
+                _id: this.props.location.query.id
             }
         })
             .then(({ data }) => {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import { Grid, Table, Dropdown, Icon, Modal, Header, Button } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config.json';
@@ -105,7 +105,9 @@ export class Home extends Component {
                     <Table.Cell>{ item.position }</Table.Cell>
                     <Table.Cell>{ item.startedAt }</Table.Cell>
                     <Table.Cell>
-                        <Icon name="write" size="large" link color="blue" />
+                        <Link to={{ pathname: '/profile', query: { id: item._id } }}>
+                            <Icon name="search" size="large" link color="blue" />
+                        </Link>
                         <Modal trigger={ <Icon name="delete"
                                                size="large"
                                                link
