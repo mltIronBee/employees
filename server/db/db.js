@@ -29,6 +29,7 @@ export const initializeDb = () => {
 };
 
 export const createEmployee = (data) => {
+    console.log(data);
     const employee = new Employee(data);
 
     return employee.save();

@@ -26,12 +26,12 @@ app.get('/login', (req, res) => {
 
     db.findByLogin(name)
         .then(user => {
-        if (user.password !== pass ) {
-            res.status(401).end();
-        } else {
-            res.send(user);
-        }
-    })
+            if (user.password !== pass ) {
+                res.status(401).end();
+            } else {
+                res.send(user);
+            }
+        })
         .catch(err => {
             res.status(404).end();
         });
@@ -55,7 +55,7 @@ app.get('/employee', (req, res) => {
             res.send(employee);
         })
         .catch(err => {
-            res.send(err);
+            res.status(401).send(err);
         });
 });
 
@@ -66,30 +66,29 @@ app.get('/employees', (req, res) => {
             res.send(result);
         })
         .catch(err => {
-            res.send(err);
+            res.status(401).send(err);
         });
 });
 
 app.post('/employee/update', (req, res) => {
 
-    db.updateEmployeeData(req.body._id, req.body)
+    db.updateEmployeeData(req.body.id, req.body)
         .then(result => {
             res.send(result);
         })
         .catch(err => {
-            res.send(err);
-            console.log(err);
+            res.status(401).send(err);
         })
 });
 
 app.post('/employee/delete', (req, res) => {
 
-    db.deleteEmployee(req.body._id)
+    db.deleteEmployee(req.body.id)
        .then(result => {
            res.send(result);
        })
        .catch(err => {
-           res.send(err);
+           res.status(401).send(err);
        })
 });
 
