@@ -38,6 +38,10 @@ export const getAllEmployees = () => {
     return Employee.find();
 };
 
+export const getEmployeeById = (_id) => {
+    return Employee.findById(_id);
+};
+
 export const updateEmployeeData = (_id, data) => {
     return Employee.findByIdAndUpdate(_id, { $set: data });
 };

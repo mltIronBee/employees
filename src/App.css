@@ -20,3 +20,10 @@ header i {
 .grid {
   margin: 50px auto;
 }
+
+.upload-image {
+  opacity: 0;
+  position: absolute;
+  overflow: hidden;
+  z-index: -1;
+}

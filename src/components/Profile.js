@@ -1,26 +1,46 @@
 import React, { Component } from 'react';
+import basic from 'basic-auth-header';
+import http from '../helpers/http';
+import { apiPrefix } from '../../config.json';
 import { Grid, Form, Button, Icon, Table, Segment, Image } from 'semantic-ui-react';
 
 export class Profile extends Component {
 
     state = {
+        _id: '',
         imageSrc: 'http://lazyadmin.nl/wp-content/plugins/all-in-one-seo-pack/images/default-user-image.png',
         firstName: '',
         lastName: '',
         position: '',
+        startedAt: '',
         skills: [],
         readOnly: true,
-        newSkill: ''
+        newSkill: '',
+        messageError: false,
+        message: ''
     };
 
     componentDidMount() {
 
-        this.setState({
-            firstName: 'First',
-            lastName: 'Last',
-            position: 'HR',
-            skills: [],
-            validationError: false
+        http.get(`${apiPrefix}/employee`, {
+            params: {
+                _id: '58ab1482d49ab10f188edbd1'
+            }
+        })
+            .then(({ data }) => {
+
+            console.log(data);
+            this.setState({
+                _id: data._id,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                position: data.position,
+                startedAt: new Date(data.startedAt).toISOString().split('T')[0],
+                skills: data.skills
+            });
+        })
+            .catch(err => {
+            console.log(err);
         });
     }
 
@@ -38,12 +58,14 @@ export class Profile extends Component {
     addSkill = () => {
         if (!this.state.newSkill.length) {
             this.setState({
-                validationError: 'Field must be required!'
+                messageError: true,
+                message: 'Field must be required!'
             });
 
             setTimeout(() => {
                 this.setState({
-                    validationError: ''
+                    messageError: false,
+                    message: ''
                 });
             }, 3000);
 
@@ -54,29 +76,68 @@ export class Profile extends Component {
             newSkill: ''
         }));
     };
-    
-    saveData = () => {
 
+    saveData = (e) => {
+        e.preventDefault();
+        console.log(this.state.startedAt);
+        const data = {
+            _id: this.state._id,
+            firstName: this.state.firstName,
+            lastName: this.state.lastName,
+            position: this.state.position,
+            startedAt: this.state.startedAt,
+            skills: this.state.skills,
+        };
+
+        http.post(`${apiPrefix}/employee/update`, data )
+            .then(result => {
+                this.setState({
+                    readOnly: true,
+                    message: 'Data updated'
+                });
+                setTimeout(() => {
+                    this.setState({
+                        message: ''
+                    });
+                }, 3000);
+            })
+            .catch(err => {
+                this.setState({
+                    message: 'Data is not updated',
+                    messageError: true
+                });
+                setTimeout(() => {
+                    this.setState({
+                        messageError: false,
+                        message: ''
+                    });
+                }, 3000);
+            })
     };
+
+    // saveImage = (e) => {
+    //
+    // };
 
     render() {
         return (
             <Grid container centered columns={2}>
-                <Grid.Column>
+                <Grid.Column textAlign="left">
                     <Segment raised style={{marginTop: "40px"}}>
                         <Form>
                             <Grid.Row>
                                 <Grid.Column width={1} style={{textAlign: "right"}}>
                                     {
                                         this.state.readOnly
-                                            ? <Icon name="large pencil"
+                                            ? <Icon name="pencil"
+                                                    size="large"
                                                     color="blue"
                                                     onClick={this.readOnlyFalse}
                                                     style={{cursor: "pointer"}}/>
                                             : <Button color="blue"
                                                       onClick={this.saveData}>
                                                 Save
-                                            </Button>
+                                              </Button>
                                     }
                                 </Grid.Column>
                             </Grid.Row>
@@ -87,16 +148,19 @@ export class Profile extends Component {
                                        centered />
                                 {
                                     !this.state.readOnly && (
-                                        <label style={{ textAlign: "center", cursor: "pointer"}}>
-                                            <Icon name="download" /> Download profile image
-                                        </label>
+                                        <div style={{ textAlign: "center", cursor: "pointer"}}>
+                                            <label>
+                                                <Icon name="download" /> Download profile image
+                                            </label>
+                                            <input type="file" className="upload-image" onChange={this.saveImage}/>
+                                        </div>
                                     )
                                 }
                             </Form.Field>
                             {
-                                this.state.validationError && (
-                                    <Segment inverted color="red" tertiary>
-                                        {this.state.validationError}
+                                this.state.message && (
+                                    <Segment inverted color={!this.state.messageError ? 'blue' : 'red'} tertiary>
+                                        {this.state.message}
                                     </Segment>
                                 )
                             }
@@ -122,25 +186,31 @@ export class Profile extends Component {
                                        onChange={(e) => { this.setState({ position: e.target.value }) }} />
                             </Form.Field>
                             <Form.Field>
+                                <label>Started at</label>
+                                <input type='date'
+                                       value={this.state.startedAt}
+                                       disabled={this.state.readOnly}
+                                       onChange={(e) => { this.setState({ startedAt: e.target.value }) }} />
+                            </Form.Field>
+                            <Form.Field>
                                 <Table>
                                     <Table.Header>
                                         <Table.Row>
                                             <Table.HeaderCell>Skills</Table.HeaderCell>
-                                            {
-                                                !this.state.readOnly && <Table.HeaderCell />
-                                            }
+                                            {!this.state.readOnly && <Table.HeaderCell />}
                                         </Table.Row>
                                     </Table.Header>
                                     <Table.Body>
                                     {
                                         this.state.skills.length
-                                            ? this.state.skills.map((skill) => (
-                                                    <Table.Row>
+                                            ? this.state.skills.map((skill, index) => (
+                                                    <Table.Row key={index}>
                                                         <Table.Cell>{skill}</Table.Cell>
                                                         {
                                                             !this.state.readOnly && (
                                                                 <Table.Cell>
                                                                     <Icon name="delete"
+                                                                          color="blue"
                                                                           style={{cursor: "pointer"}}
                                                                           onClick={this.deleteSkill} />
                                                                 </Table.Cell>
@@ -154,7 +224,6 @@ export class Profile extends Component {
                                                     <Table.Cell>No skills</Table.Cell>
                                                 </Table.Row>
                                             )
-
                                     }
                                     {
                                         !this.state.readOnly && (
@@ -168,6 +237,7 @@ export class Profile extends Component {
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     <Icon name="add"
+                                                          color="blue"
                                                           style={{cursor: "pointer"}}
                                                           onClick={this.addSkill} />
                                                 </Table.Cell>

@@ -37,12 +37,22 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.post('/employees/create', (req, res) => {
+app.post('/employee/create', (req, res) => {
 
     db.createEmployee(req.body)
         .then(result => {
             res.send(result);
-            console.log(result);
+        })
+        .catch(err => {
+            res.send(err);
+        });
+});
+
+app.get('/employee', (req, res) => {
+
+    db.getEmployeeById(req.query._id)
+        .then(employee => {
+            res.send(employee);
         })
         .catch(err => {
             res.send(err);
@@ -60,7 +70,7 @@ app.get('/employees', (req, res) => {
         });
 });
 
-app.post('/employees/update', (req, res) => {
+app.post('/employee/update', (req, res) => {
 
     db.updateEmployeeData(req.body._id, req.body)
         .then(result => {
@@ -72,7 +82,7 @@ app.post('/employees/update', (req, res) => {
         })
 });
 
-app.post('/employees/delete', (req, res) => {
+app.post('/employee/delete', (req, res) => {
 
     db.deleteEmployee(req.body._id)
        .then(result => {
