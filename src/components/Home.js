@@ -163,7 +163,12 @@ export class Home extends Component {
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <Table singleLine style={{ marginTop: '40px' }} color="blue">
+                        <Link to="profile/create">
+                            <Button floated="right" color="blue" style={{ margin: '20px 0' }}>
+                                Add new employee
+                            </Button>
+                        </Link>
+                        <Table singleLine color="blue">
                             <Table.Header>
                                 <Table.Row>
                                     <Table.HeaderCell>#</Table.HeaderCell>

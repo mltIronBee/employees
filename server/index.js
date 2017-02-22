@@ -20,7 +20,6 @@ app.use( cors({ origin: '*' }) );
 db.initializeDb();
 
 // RESTful API
-
 app.get('/login', (req, res) => {
     let { name, pass } = auth(req);
 
@@ -44,7 +43,7 @@ app.post('/employee/create', (req, res) => {
             res.send(result);
         })
         .catch(err => {
-            res.send(err);
+            res.status(401).send(err);
         });
 });
 

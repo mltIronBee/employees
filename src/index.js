@@ -11,7 +11,7 @@ ReactDOM.render(
       <Route path="/" component={ App }>
           <IndexRoute component={ Home }/>
           <Route path="login" component={ Login }/>
-          <Route path="profile" component={ Profile } />
+          <Route path="profile(/:method)" component={ Profile } />
       </Route>
   </Router>,
   document.getElementById('root')

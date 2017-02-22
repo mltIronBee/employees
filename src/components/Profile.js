@@ -14,6 +14,7 @@ export class Profile extends Component {
         startedAt: '',
         skills: [],
         readOnly: true,
+        isCreating: false,
         newSkill: '',
         messageError: false,
         message: ''
@@ -21,26 +22,31 @@ export class Profile extends Component {
 
     componentDidMount() {
 
-        http.get(`${apiPrefix}/employee`, {
-            params: {
-                _id: this.props.location.query.id
-            }
-        })
-            .then(({ data }) => {
+        if(this.props.params.method === 'create') {
 
-            console.log(data);
-            this.setState({
-                _id: data._id,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                position: data.position,
-                startedAt: new Date(data.startedAt).toISOString().split('T')[0],
-                skills: data.skills
-            });
-        })
-            .catch(err => {
-            console.log(err);
-        });
+            this.setState({ isCreating: true, readOnly: false });
+
+        } else {
+            http.get(`${apiPrefix}/employee`, {
+                params: {
+                    _id: this.props.location.query.id
+                }
+            })
+                .then(({ data }) => {
+
+                    this.setState({
+                        _id: data._id,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        position: data.position,
+                        startedAt: new Date(data.startedAt).toISOString().split('T')[0],
+                        skills: data.skills
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     }
 
     readOnlyFalse = () => {
@@ -54,22 +60,26 @@ export class Profile extends Component {
         this.setState({skills: skills});
     };
 
+    showAlert = (message, isError = false) => {
+        this.setState({
+            messageError: isError,
+            message
+        });
+
+        setTimeout(() => {
+            this.setState({
+                messageError: false,
+                message: ''
+            });
+        }, 3000);
+    };
+
     addSkill = () => {
         if (!this.state.newSkill.length) {
-            this.setState({
-                messageError: true,
-                message: 'Field must be required!'
-            });
-
-            setTimeout(() => {
-                this.setState({
-                    messageError: false,
-                    message: ''
-                });
-            }, 3000);
-
+            this.showAlert('Field must be required!', true);
             return;
         }
+
         this.setState((prevState) => ({
             skills: [...prevState.skills, prevState.newSkill],
             newSkill: ''
@@ -78,45 +88,46 @@ export class Profile extends Component {
 
     saveData = (e) => {
         e.preventDefault();
-        console.log(this.state.startedAt);
-        const data = {
-            _id: this.state._id,
-            firstName: this.state.firstName,
-            lastName: this.state.lastName,
-            position: this.state.position,
-            startedAt: this.state.startedAt,
-            skills: this.state.skills,
-        };
 
-        http.post(`${apiPrefix}/employee/update`, data )
-            .then(result => {
-                this.setState({
-                    readOnly: true,
-                    message: 'Data updated'
-                });
-                setTimeout(() => {
-                    this.setState({
-                        message: ''
-                    });
-                }, 3000);
+        let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
+        let data = {};
+        const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
+
+        if(!firstName || !lastName || !position || !startedAt) {
+            this.showAlert('Field must be required!', true);
+            return;
+        }
+
+        if(isCreating) {
+            data = {
+                firstName,
+                lastName,
+                position,
+                startedAt,
+                skills
+            };
+        } else {
+            data = {
+                _id,
+                firstName,
+                lastName,
+                position,
+                startedAt,
+                skills
+            };
+        }
+
+        http.post(requestUrl, data )
+            .then(res => {
+                console.log(res);
+                this.setState({ readOnly: true });
+                this.showAlert(isCreating ? 'User has been successfully created' : 'Data is updated');
             })
             .catch(err => {
-                this.setState({
-                    message: 'Data is not updated',
-                    messageError: true
-                });
-                setTimeout(() => {
-                    this.setState({
-                        messageError: false,
-                        message: ''
-                    });
-                }, 3000);
-            })
+                console.log(err);
+                this.showAlert(isCreating ? 'Creating error!' : 'Updating error!', true);
+            });
     };
-
-    // saveImage = (e) => {
-    //
-    // };
 
     render() {
         return (
@@ -147,7 +158,7 @@ export class Profile extends Component {
                                        centered />
                                 {
                                     !this.state.readOnly && (
-                                        <div style={{ textAlign: "center", cursor: "pointer"}}>
+                                        <div style={{textAlign: "center", cursor: "pointer"}}>
                                             <label>
                                                 <Icon name="download" /> Download profile image
                                             </label>
