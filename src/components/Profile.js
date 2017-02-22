@@ -20,6 +20,8 @@ export class Profile extends Component {
         message: ''
     };
 
+    uploadedImage = null;
+
     componentDidMount() {
 
         if(this.props.params.method === 'create') {
@@ -90,7 +92,6 @@ export class Profile extends Component {
         e.preventDefault();
 
         let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
-        let data = {};
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
         if(!firstName || !lastName || !position || !startedAt) {
@@ -98,23 +99,19 @@ export class Profile extends Component {
             return;
         }
 
-        if(isCreating) {
-            data = {
-                firstName,
-                lastName,
-                position,
-                startedAt,
-                skills
-            };
-        } else {
-            data = {
-                _id,
-                firstName,
-                lastName,
-                position,
-                startedAt,
-                skills
-            };
+        const data = new FormData();
+
+        data.append('firstName', firstName);
+        data.append('lastName', lastName);
+        data.append('position', position);
+        data.append('startedAt', startedAt);
+        data.append('image', this.uploadedImage);
+        skills.forEach(skill => {
+            data.append('skills[]', skill);
+        });
+
+        if(!isCreating) {
+            data.append('_id', _id);
         }
 
         http.post(requestUrl, data )
@@ -127,6 +124,26 @@ export class Profile extends Component {
                 console.log(err);
                 this.showAlert(isCreating ? 'Creating error!' : 'Updating error!', true);
             });
+    };
+
+    onUpload = (e) => {
+        this.uploadedImage = e.target.files[0];
+
+        this.imagePreview();
+    };
+
+
+    imagePreview = () => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+
+            this.setState({
+                imageSrc: reader.result
+            });
+        };
+
+        reader.readAsDataURL(this.uploadedImage);
     };
 
     render() {
@@ -162,7 +179,7 @@ export class Profile extends Component {
                                             <label>
                                                 <Icon name="download" /> Download profile image
                                             </label>
-                                            <input type="file" className="upload-image" onChange={this.saveImage}/>
+                                            <input type="file" className="upload-image" onChange={this.onUpload}/>
                                         </div>
                                     )
                                 }
@@ -221,7 +238,7 @@ export class Profile extends Component {
                                                                 <Table.Cell>
                                                                     <Icon name="delete"
                                                                           color="blue"
-                                                                          style={{cursor: "pointer"}}
+                                                                          link
                                                                           onClick={this.deleteSkill} />
                                                                 </Table.Cell>
                                                             )
