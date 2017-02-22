@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config.json';
 import { Grid, Form, Button, Icon, Table, Segment, Image } from 'semantic-ui-react';
@@ -119,6 +120,10 @@ export class Profile extends Component {
                 console.log(res);
                 this.setState({ readOnly: true });
                 this.showAlert(isCreating ? 'User has been successfully created' : 'Data is updated');
+
+                if(isCreating) {
+                    browserHistory.push('/');
+                }
             })
             .catch(err => {
                 console.log(err);
