@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import multer from 'multer';
 import auth from 'basic-auth';
 
 import * as db from './db/db';
@@ -36,7 +37,7 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.post('/employee/create', (req, res) => {
+app.post('/employee/create', multer().array(), (req, res) => {
 
     db.createEmployee(req.body)
         .then(result => {
@@ -69,7 +70,7 @@ app.get('/employees', (req, res) => {
         });
 });
 
-app.post('/employee/update', (req, res) => {
+app.post('/employee/update', multer().array(),(req, res) => {
 
     db.updateEmployeeData(req.body._id, req.body)
         .then(result => {
