@@ -41,7 +41,7 @@ export class Login extends Component {
         return (
             <Grid container centered columns={2}>
                 <Grid.Column textAlign="left">
-                    <Segment color="blue" style={{ marginTop: '40px' }}>
+                    <Segment color="blue" style={{ marginTop: '40px' }} raised>
                         <Form onSubmit={this.onLogin}>
                             {
                                 this.state.validationError

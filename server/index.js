@@ -26,18 +26,18 @@ app.get('/login', (req, res) => {
 
     db.findByLogin(name)
         .then(user => {
-        if (user.password !== pass ) {
-            res.status(401).end();
-        } else {
-            res.send(user);
-        }
-    })
+            if (user.password !== pass ) {
+                res.status(401).end();
+            } else {
+                res.send(user);
+            }
+        })
         .catch(err => {
             res.status(404).end();
         });
 });
 
-app.post('/employees/create', (req, res) => {
+app.post('/employee/create', (req, res) => {
 
     db.createEmployee(req.body)
         .then(result => {
@@ -45,7 +45,7 @@ app.post('/employees/create', (req, res) => {
             console.log(result);
         })
         .catch(err => {
-            res.send(err);
+            res.status(401).send(err);
         });
 });
 
@@ -56,30 +56,29 @@ app.get('/employees', (req, res) => {
             res.send(result);
         })
         .catch(err => {
-            res.send(err);
+            res.status(401).send(err);
         });
 });
 
-app.post('/employees/update', (req, res) => {
+app.post('/employee/update', (req, res) => {
 
-    db.updateEmployeeData(req.body._id, req.body)
+    db.updateEmployeeData(req.body.id, req.body)
         .then(result => {
             res.send(result);
         })
         .catch(err => {
-            res.send(err);
-            console.log(err);
+            res.status(401).send(err);
         })
 });
 
-app.post('/employees/delete', (req, res) => {
+app.post('/employee/delete', (req, res) => {
 
-    db.deleteEmployee(req.body._id)
+    db.deleteEmployee(req.body.id)
        .then(result => {
            res.send(result);
        })
        .catch(err => {
-           res.send(err);
+           res.status(401).send(err);
        })
 });
 

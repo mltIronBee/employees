@@ -1,39 +1,15 @@
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
-import { Grid, Table, Dropdown, Icon } from 'semantic-ui-react';
+import { Grid, Table, Dropdown, Icon, Modal, Header, Button } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
+import { apiPrefix } from '../../config.json';
 
 export class Home extends Component {
 
     state = {
-        employees: [
-            {
-                _id: 1,
-                firstName: 'User 1',
-                lastName: 'User 11',
-                position: 'Position 1',
-                skills: ['php', 'laravel'],
-                startedAt: '2017/02/20'
-            },
-            {
-                _id: 2,
-                firstName: 'User 2',
-                lastName: 'User 22',
-                position: 'Position 2',
-                skills: ['js', 'react', 'ember'],
-                startedAt: '2017/02/19'
-            },
-            {
-                _id: 3,
-                firstName: 'User 3',
-                lastName: 'User 33',
-                position: 'Position 3',
-                skills: ['js', 'angular2', 'react'],
-                startedAt: '2017/02/22'
-            }
-        ],
-
-        filtered: []
+        employees: [],
+        filtered: [],
+        isModalOpened: false
     };
 
     componentDidMount() {
@@ -41,18 +17,44 @@ export class Home extends Component {
 
         if(key) {
             setAuthHeader(key);
+
+            http.get(`${apiPrefix}/login`)
+                .then((res) => {
+                    return http.get(`${apiPrefix}/employees`)
+                })
+                .then(({ data }) => {
+                    this.setState({ employees: this.formatEmployeesDate(data) })
+                })
+                .catch(err => {
+                    localStorage.removeItem('Authorization');
+                    browserHistory.push('/login');
+                });
+
         } else {
             browserHistory.push('/login');
         }
     }
 
-    hasItem = (array, searchItem) => {
-
-        return array.some(item => {
-            return item['value'] === searchItem;
-        });
-
+    onDelete = (id) => {
+        http.post(`${apiPrefix}/employee/delete`, { id })
+            .then(res => {
+                this.setState((prevState) => ({
+                    employees: prevState.employees.filter((employee) => employee._id !== id),
+                    isModalOpened: false
+                }));
+            })
+            .catch(err => {
+                console.log('Deleting error');
+            })
     };
+
+    formatEmployeesDate = (employees) => employees.map(employee => {
+         employee.startedAt = new Date(employee.startedAt).toISOString().split('T')[0];
+
+         return employee;
+    });
+
+    hasItem = (array, searchItem) => array.some(item => item['value'] === searchItem);
 
     prepareOptions = () => {
         const options = [];
@@ -94,19 +96,51 @@ export class Home extends Component {
 
     arrayToRows = (array) => {
 
-        return array.map((item, index) => (
-            <Table.Row key={ index }>
-                <Table.Cell>{ index + 1 }</Table.Cell>
-                <Table.Cell>{ item.firstName }</Table.Cell>
-                <Table.Cell>{ item.lastName }</Table.Cell>
-                <Table.Cell>{ item.position }</Table.Cell>
-                <Table.Cell>{ item.startedAt }</Table.Cell>
-                <Table.Cell>
-                    <Icon name="write" size="large" link color="blue" />
-                    <Icon name="delete" size="large" link color="blue" />
-                </Table.Cell>
-            </Table.Row>
-        ));
+        if(array.length) {
+            return array.map((item, index) => (
+                <Table.Row key={ index }>
+                    <Table.Cell>{ index + 1 }</Table.Cell>
+                    <Table.Cell>{ item.firstName }</Table.Cell>
+                    <Table.Cell>{ item.lastName }</Table.Cell>
+                    <Table.Cell>{ item.position }</Table.Cell>
+                    <Table.Cell>{ item.startedAt }</Table.Cell>
+                    <Table.Cell>
+                        <Icon name="write" size="large" link color="blue" />
+                        <Modal trigger={ <Icon name="delete"
+                                               size="large"
+                                               link
+                                               color="red"
+                                               onClick={ () => { this.setState({ isModalOpened: true })} } /> }
+                               basic
+                               open={ this.state.isModalOpened }
+                               size='small'>
+                            <Header icon="user delete" content="Deleting" color="red" />
+                            <Modal.Content>
+                                <h3>Are you sure you want to delete an employee?</h3>
+                            </Modal.Content>
+                            <Modal.Actions>
+                                <Button basic
+                                        inverted
+                                        onClick={ () => { this.setState({ isModalOpened: false })} }>
+                                    No
+                                </Button>
+                                <Button color='red'
+                                        basic
+                                        inverted
+                                        onClick={ () => { this.onDelete(item._id) } }>
+                                    Yes</Button>
+                            </Modal.Actions>
+                        </Modal>
+                    </Table.Cell>
+                </Table.Row>
+            ));
+        } else {
+            return (
+                <Table.Row textAlign="center">
+                    <Table.Cell>No employees</Table.Cell>
+                </Table.Row>
+            )
+        }
     };
 
     render() {
