@@ -9,7 +9,8 @@ export class Home extends Component {
     state = {
         employees: [],
         filtered: [],
-        isModalOpened: false
+        isModalOpened: false,
+        currentEmployeeId: ''
     };
 
     componentDidMount() {
@@ -108,31 +109,11 @@ export class Home extends Component {
                         <Link to={{ pathname: '/profile', query: { id: item._id } }}>
                             <Icon name="search" size="large" link color="blue" />
                         </Link>
-                        <Modal trigger={ <Icon name="delete"
-                                               size="large"
-                                               link
-                                               color="red"
-                                               onClick={ () => { this.setState({ isModalOpened: true })} } /> }
-                               basic
-                               open={ this.state.isModalOpened }
-                               size='small'>
-                            <Header icon="user delete" content="Deleting" color="red" />
-                            <Modal.Content>
-                                <h3>Are you sure you want to delete an employee?</h3>
-                            </Modal.Content>
-                            <Modal.Actions>
-                                <Button basic
-                                        inverted
-                                        onClick={ () => { this.setState({ isModalOpened: false })} }>
-                                    No
-                                </Button>
-                                <Button color='red'
-                                        basic
-                                        inverted
-                                        onClick={ () => { this.onDelete(item._id) } }>
-                                    Yes</Button>
-                            </Modal.Actions>
-                        </Modal>
+                        <Icon name="delete"
+                              size="large"
+                              link
+                              color="red"
+                              onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: item._id })} } />
                     </Table.Cell>
                 </Table.Row>
             ));
@@ -148,6 +129,26 @@ export class Home extends Component {
     render() {
         return (
             <Grid container>
+                <Modal basic
+                       open={ this.state.isModalOpened }
+                       size='small'>
+                    <Header icon="user delete" content="Deleting" color="red" />
+                    <Modal.Content>
+                        <h3>Are you sure you want to delete an employee?</h3>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button basic
+                                inverted
+                                onClick={ () => { this.setState({ isModalOpened: false }) } }>
+                            No
+                        </Button>
+                        <Button color='red'
+                                basic
+                                inverted
+                                onClick={ () => { this.onDelete(this.state.currentEmployeeId) } }>
+                            Yes</Button>
+                    </Modal.Actions>
+                </Modal>
                 <Grid.Row>
                     <Grid.Column width={8} floated="right">
                         <Dropdown fluid
