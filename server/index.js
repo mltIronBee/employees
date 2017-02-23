@@ -40,6 +40,8 @@ const storage = multer.diskStorage({
 const multerMiddleware = multer({ storage }).single('image');
 
 // RESTful API
+app.use(express.static('build'));
+
 app.get('/login', (req, res) => {
     let { name, pass } = auth(req);
 
