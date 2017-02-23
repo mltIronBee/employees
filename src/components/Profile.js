@@ -167,16 +167,23 @@ export class Profile extends Component {
                             if(e.keyCode == 13 && e.ctrlKey) this.saveData(e);
                         }}>
                             <Grid.Row>
-                                <Grid.Column width={1} style={{textAlign: "right"}}>
+                                <Grid.Column>
+                                    <Icon color="blue"
+                                          name="reply"
+                                          size="big"
+                                          style={{cursor: "pointer", float: "left"}}
+                                          onClick={() => { browserHistory.push('/') }}>
+                                    </Icon>
                                     {
                                         this.state.readOnly
                                             ? <Icon name="pencil"
-                                                    size="large"
+                                                    size="big"
                                                     color="blue"
                                                     onClick={this.readOnlyFalse}
-                                                    style={{cursor: "pointer"}}/>
+                                                    style={{cursor: "pointer", float: "right"}}/>
                                             : <Button color="blue"
-                                                      onClick={this.saveData}>
+                                                      onClick={this.saveData}
+                                                      floated="right">
                                                 Save
                                               </Button>
                                     }
@@ -285,7 +292,6 @@ export class Profile extends Component {
                                                           style={{cursor: "pointer"}}
                                                           htmlFor="newSkills"
                                                           onClick={this.addSkill}/>
-                                                    {/*//this.addSkill*/}
                                                 </Table.Cell>
                                             </Table.Row>
                                         )
