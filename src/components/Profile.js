@@ -113,7 +113,7 @@ export class Profile extends Component {
         data.append('lastName', lastName);
         data.append('position', position);
         data.append('startedAt', startedAt);
-        data.append('image', this.uploadedImage);
+        data.append('image', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
         skills.forEach(skill => {
             data.append('skills[]', skill);
         });
@@ -164,7 +164,7 @@ export class Profile extends Component {
                 <Grid.Column textAlign="left">
                     <Segment raised color="blue" style={{marginTop: "40px"}}>
                         <Form onKeyDown={(e) => {
-                            if(e.keyCode == 13 && e.ctrlKey) this.saveData(e);
+                            if(e.keyCode === 13 && e.ctrlKey) this.saveData(e);
                         }}>
                             <Grid.Row>
                                 <Grid.Column>

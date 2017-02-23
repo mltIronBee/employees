@@ -3,6 +3,7 @@ import { browserHistory, Link } from 'react-router';
 import { Grid, Table, Dropdown, Icon, Modal, Header, Button } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
+import { UserPopup } from './UserPopup';
 
 export class Home extends Component {
 
@@ -10,7 +11,8 @@ export class Home extends Component {
         employees: [],
         filtered: [],
         isModalOpened: false,
-        currentEmployeeId: ''
+        currentEmployeeId: '',
+        popupTrigger: null
     };
 
     componentDidMount() {
@@ -107,7 +109,11 @@ export class Home extends Component {
                     <Table.Cell>{ item.startedAt }</Table.Cell>
                     <Table.Cell>
                         <Link to={{ pathname: '/profile', query: { id: item._id } }}>
-                            <Icon name="search" size="large" link color="blue" />
+                            <UserPopup user={ item }
+                                       trigger={ <Icon name="search"
+                                                       size="large"
+                                                       link color="blue" /> }
+                            />
                         </Link>
                         <Icon name="delete"
                               size="large"
@@ -129,6 +135,7 @@ export class Home extends Component {
     render() {
         return (
             <Grid container>
+
                 <Modal basic
                        open={ this.state.isModalOpened }
                        size='small'>
@@ -149,6 +156,7 @@ export class Home extends Component {
                             Yes</Button>
                     </Modal.Actions>
                 </Modal>
+
                 <Grid.Row>
                     <Grid.Column width={8} floated="right">
                         <Dropdown fluid
