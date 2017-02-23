@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const multerMiddleware = multer({ storage }).single('image');
+const multerMiddleware = multer({ dest: './build/uploads' }).single('image');
 
 // RESTful API
 app.use(express.static('build'));
