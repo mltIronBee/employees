@@ -7,7 +7,7 @@ import mime from 'mime';
 import auth from 'basic-auth';
 
 import * as db from './db/db';
-import { serverPort } from '../config';
+import { serverPort, apiPrefix } from '../config';
 
 // Initialization of express application
 const app = express();
