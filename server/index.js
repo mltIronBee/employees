@@ -27,7 +27,7 @@ let currentUploadedImageName = '';
 
 const storage = multer.diskStorage({
     destination(req, file, callback) {
-        callback(null, './public/uploads');
+        callback(null, './build/uploads');
     },
 
     filename(req, file, callback) {
