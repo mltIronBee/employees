@@ -11,14 +11,15 @@ class App extends Component {
           <div className="app">
               <header>
                   Employees
-                  <Icon name="log out"
-                        size="large"
-                        link
-                        style={{ float: 'right', marginRight: '30px' }}
-                        onClick={() => {
-                            localStorage.removeItem('Authorization');
-                            browserHistory.push('/login');
-                        }} />
+                  { location.pathname !== '/login'
+                        && <Icon name="log out"
+                                 size="large"
+                                 link
+                                 onClick={() => {
+                                     localStorage.removeItem('Authorization');
+                                     browserHistory.push('/login');
+                                 }} />
+                  }
               </header>
               { this.props.children }
           </div>

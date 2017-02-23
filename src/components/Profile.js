@@ -156,7 +156,7 @@ export class Profile extends Component {
         return (
             <Grid container centered columns={2}>
                 <Grid.Column textAlign="left">
-                    <Segment raised style={{marginTop: "40px"}}>
+                    <Segment raised color="blue" style={{marginTop: "40px"}}>
                         <Form>
                             <Grid.Row>
                                 <Grid.Column width={1} style={{textAlign: "right"}}>

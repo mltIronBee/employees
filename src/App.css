@@ -5,6 +5,7 @@ body {
 }
 
 header {
+  position: relative;
   background-color: #636363;
   height: 40px;
   line-height: 1.8;
@@ -14,7 +15,9 @@ header {
 }
 
 header i {
-  padding: 5px 0;
+  position: absolute;
+  right: 8px;
+  top: 5px;
 }
 
 .grid {
