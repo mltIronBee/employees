@@ -78,19 +78,25 @@ export class Profile extends Component {
         }, 3000);
     };
 
-    addSkill = () => {
-        if (!this.state.newSkill.length) {
-            this.showAlert('Field must be required!', true);
-            return;
+    addSkill = (e) => {
+        console.log(e);
+        if(e.which === 13 || e.type === 'click') {
+            e.preventDefault();
+            if (!this.state.newSkill.length) {
+                this.showAlert('Field must be required!', true);
+                return;
+            }
+            this.setState((prevState) => ({
+                skills: [...prevState.skills, prevState.newSkill],
+                newSkill: ''
+            }));
         }
 
-        this.setState((prevState) => ({
-            skills: [...prevState.skills, prevState.newSkill],
-            newSkill: ''
-        }));
     };
 
     saveData = (e) => {
+
+
         e.preventDefault();
 
         let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
@@ -157,7 +163,9 @@ export class Profile extends Component {
             <Grid container centered columns={2}>
                 <Grid.Column textAlign="left">
                     <Segment raised color="blue" style={{marginTop: "40px"}}>
-                        <Form>
+                        <Form onKeyDown={(e) => {
+                            if(e.keyCode == 13 && e.ctrlKey) this.saveData(e);
+                        }}>
                             <Grid.Row>
                                 <Grid.Column width={1} style={{textAlign: "right"}}>
                                     {
@@ -264,16 +272,20 @@ export class Profile extends Component {
                                             <Table.Row>
                                                 <Table.Cell>
                                                     <input type="text"
+                                                           id="newSkills"
                                                            value={this.state.newSkill}
                                                            onChange={(e) => {
                                                                this.setState({ newSkill: e.target.value });
-                                                           }} />
+                                                           }}
+                                                           onKeyPress={this.addSkill}/>
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     <Icon name="add"
                                                           color="blue"
                                                           style={{cursor: "pointer"}}
-                                                          onClick={this.addSkill} />
+                                                          htmlFor="newSkills"
+                                                          onClick={this.addSkill}/>
+                                                    {/*//this.addSkill*/}
                                                 </Table.Cell>
                                             </Table.Row>
                                         )
