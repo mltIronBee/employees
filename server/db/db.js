@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { dbConfig } from '../../config.json';
+import { dbConfig } from '../../config';
 
 import { User } from './models/User';
 import { Employee } from './models/Employee';

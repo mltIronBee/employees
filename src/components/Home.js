@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { browserHistory, Link } from 'react-router';
 import { Grid, Table, Dropdown, Icon, Modal, Header, Button } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
-import { apiPrefix } from '../../config.json';
+import { apiPrefix } from '../../config';
 
 export class Home extends Component {
 

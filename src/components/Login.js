@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import basic from 'basic-auth-header';
 import http, { setAuthHeader } from '../helpers/http';
-import { apiPrefix } from '../../config.json';
+import { apiPrefix } from '../../config';
 import { Grid, Form, Button, Segment } from 'semantic-ui-react'
 
 export class Login extends Component {

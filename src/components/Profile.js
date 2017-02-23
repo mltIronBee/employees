@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import http from '../helpers/http';
-import { apiPrefix } from '../../config.json';
+import { apiPrefix } from '../../config';
 import { Grid, Form, Button, Icon, Table, Segment, Image } from 'semantic-ui-react';
 
 export class Profile extends Component {
