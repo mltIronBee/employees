@@ -7,7 +7,7 @@ import mime from 'mime';
 import auth from 'basic-auth';
 
 import * as db from './db/db';
-import { serverPort, apiPrefix } from '../config';
+import { serverPort } from '../config';
 
 // Initialization of express application
 const app = express();
@@ -27,7 +27,7 @@ let currentUploadedImageName = '';
 
 const storage = multer.diskStorage({
     destination(req, file, callback) {
-        callback(null, './build/uploads');
+        callback(null, './public/uploads');
     },
 
     filename(req, file, callback) {
