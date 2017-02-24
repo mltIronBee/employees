@@ -31,7 +31,18 @@ export class Profile extends Component {
 
         if(this.props.params.method === 'create') {
 
-            this.setState({ isCreating: true, readOnly: false });
+            http.get(`${apiPrefix}/employee/create`)
+                .then(({data : { skills, positions }}) => {
+                    this.setState({
+                        preparedSkills: skills ? skills : [],
+                        preparedPositions: positions ? positions : [],
+                        isCreating: true,
+                        readOnly: false
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                });
 
         } else {
             http.get(`${apiPrefix}/employee`, {

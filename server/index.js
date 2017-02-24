@@ -75,6 +75,20 @@ app.post('/employee/create', multerMiddleware, (req, res) => {
         });
 });
 
+app.get('/employee/create', (req, res) => {
+
+    db.getSkillsAndPositions()
+        .then(([skills, positions]) => {
+            res.send({
+                skills,
+                positions
+            })
+        })
+        .catch((err) => {
+            res.status(400).send(err);
+        })
+});
+
 app.get('/employee', (req, res) => {
 
     db.getEmployeeById(req.query._id)
