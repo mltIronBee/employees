@@ -96,7 +96,6 @@ export class Profile extends Component {
 
     saveData = (e) => {
 
-
         e.preventDefault();
 
         let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
