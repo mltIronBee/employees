@@ -40,18 +40,20 @@ export class Home extends Component {
 
     componentDidMount() {
         this.initializeUser();
-
-        document.addEventListener('keyup', (e) => {
-            if(e.which === 13 && this.state.isModalOpened) {
-                this.onDelete(this.state.currentEmployeeId)
-            } else if(e.which === 27 && this.state.isModalOpened) {
-                this.setState({ isModalOpened: false })
-            }
-        })
+        document.addEventListener('keyup', this.onModalActions)
     }
 
+    onModalActions = (e) => {
+
+        if(e.which === 13 && this.state.isModalOpened) {
+            this.onDelete(this.state.currentEmployeeId)
+        } else if(e.which === 27 && this.state.isModalOpened) {
+            this.setState({ isModalOpened: false })
+        }
+    };
+
     componentWillUnmount() {
-        document.removeEventListener('keyup');
+        document.removeEventListener('keyup', this.onModalActions);
     }
 
     onDelete = (id) => {
