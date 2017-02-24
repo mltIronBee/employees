@@ -18,10 +18,8 @@ export class Login extends Component {
 
         let { login, password } = this.state;
 
-        if(!login.length || !password.length) {
-            this.setState({ validationError: 'Fields are required!' });
-            return;
-        }
+        if(!login.length) return this.setState({ validationError: 'Login must be required!' });
+        if(!password.length) return this.setState({ validationError: 'Password must be required!' });
 
         const key = basic(login, password);
 
