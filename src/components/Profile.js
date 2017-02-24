@@ -101,10 +101,10 @@ export class Profile extends Component {
         let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
-        if(!firstName || !lastName || !position || !startedAt) {
-            this.showAlert('Field must be required!', true);
-            return;
-        }
+        if(!firstName) return this.showAlert('First name must be required', true);
+        if(!lastName) return this.showAlert('Last name must be required', true);
+        if(!position) return this.showAlert('Position must be required', true);
+        if(!startedAt) return this.showAlert('Start date must be required', true);
 
         const data = new FormData();
 
