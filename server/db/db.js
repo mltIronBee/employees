@@ -29,7 +29,6 @@ export const initializeDb = () => {
 };
 
 export const createEmployee = (data) => {
-    console.log(data);
     const employee = new Employee(data);
 
     return employee.save();
@@ -39,8 +38,36 @@ export const getAllEmployees = () => {
     return Employee.find();
 };
 
+export const getSkillsAndPositions = () => {
+    return Employee.find()
+        .select('skills position')
+        .exec()
+        .then(result => {
+            let preparedSkills = [],
+                preparedPositions = [];
+
+            const uniqueFilter = (item, index, self) => self.indexOf(item) === index;
+
+            result.forEach(item => {
+                preparedSkills = [...preparedSkills, ...item.skills];
+                preparedPositions.push(item.position)
+            });
+
+            preparedSkills = preparedSkills.filter(uniqueFilter);
+            preparedPositions = preparedPositions.filter(uniqueFilter);
+
+            return [preparedSkills, preparedPositions];
+        });
+};
+
 export const getEmployeeById = (_id) => {
-    return Employee.findById(_id);
+
+    return getSkillsAndPositions()
+        .then(([skills, positions]) => {
+            const employeePromise = Employee.findById(_id);
+
+            return Promise.all([employeePromise, skills, positions]);
+        });
 };
 
 export const updateEmployeeData = (_id, data) => {

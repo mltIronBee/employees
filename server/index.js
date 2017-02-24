@@ -78,8 +78,12 @@ app.post('/employee/create', multerMiddleware, (req, res) => {
 app.get('/employee', (req, res) => {
 
     db.getEmployeeById(req.query._id)
-        .then(employee => {
-            res.send(employee);
+        .then(([employee, skills, positions]) => {
+            res.send({
+                employee,
+                skills,
+                positions
+            });
         })
         .catch(err => {
             res.status(400).send(err);

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config';
-import { Grid, Form, Button, Icon, Table, Segment, Image } from 'semantic-ui-react';
+import { Grid, Form, Button, Icon, Table, Segment, Image, Dropdown } from 'semantic-ui-react';
 
 export class Profile extends Component {
 
@@ -16,9 +16,13 @@ export class Profile extends Component {
         skills: [],
         readOnly: true,
         isCreating: false,
-        newSkill: '',
         messageError: false,
-        message: ''
+        message: '',
+        preparedPositions: [],
+        preparedSkills: [],
+        positionSearch: '',
+        skillSearch: '',
+        newSkill: ''
     };
 
     uploadedImage = null;
@@ -35,16 +39,18 @@ export class Profile extends Component {
                     _id: this.props.location.query.id
                 }
             })
-                .then(({ data }) => {
+                .then(({ data: { employee, skills, positions } }) => {
 
                     this.setState(prevState => ({
-                        _id: data._id,
-                        firstName: data.firstName,
-                        lastName: data.lastName,
-                        position: data.position,
-                        startedAt: new Date(data.startedAt).toISOString().split('T')[0],
-                        skills: data.skills,
-                        imageSrc: !data.imageUrl ? prevState.imageSrc : data.imageUrl
+                        _id: employee._id,
+                        firstName: employee.firstName,
+                        lastName: employee.lastName,
+                        position: employee.position,
+                        startedAt: new Date(employee.startedAt).toISOString().split('T')[0],
+                        skills: employee.skills,
+                        imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
+                        preparedPositions: positions,
+                        preparedSkills: skills
                     }));
                 })
                 .catch(err => {
@@ -76,22 +82,6 @@ export class Profile extends Component {
                 message: ''
             });
         }, 3000);
-    };
-
-    addSkill = (e) => {
-        console.log(e);
-        if(e.which === 13 || e.type === 'click') {
-            e.preventDefault();
-            if (!this.state.newSkill.length) {
-                this.showAlert('Field must be required!', true);
-                return;
-            }
-            this.setState((prevState) => ({
-                skills: [...prevState.skills, prevState.newSkill],
-                newSkill: ''
-            }));
-        }
-
     };
 
     saveData = (e) => {
@@ -155,6 +145,46 @@ export class Profile extends Component {
         };
 
         reader.readAsDataURL(this.uploadedImage);
+    };
+
+    prepareOptions = (array) => array.map(item => ({
+        value: item,
+        text: item
+    }));
+
+    onAddNewPositionItem = (e) => {
+        if(e.which === 13) {
+            this.setState(prevState => ({
+                preparedPositions: [
+                    ...prevState.preparedPositions,
+                    prevState.positionSearch
+                ]
+            }));
+        }
+    };
+
+    onAddNewSkillItem = (e) => {
+        if (e.which === 13 || e.type === 'click') {
+            e.preventDefault();
+            if (!this.state.newSkill && !this.state.skillSearch) {
+                this.showAlert('Skill must be required!', true);
+            } else {
+                let skillToSave = this.state.skillSearch || this.state.newSkill;
+
+                if(this.state.skills.includes(skillToSave)) {
+                    this.showAlert('Skill already exist', true);
+                } else {
+                    this.setState(prevState => ({
+                        skills: [...prevState.skills, skillToSave],
+                        preparedSkills: !prevState.preparedSkills.includes(skillToSave)
+                            ? [...prevState.preparedSkills, skillToSave]
+                            : prevState.preparedSkills,
+                        skillSearch: '',
+                        newSkill: ''
+                    }));
+                }
+            }
+        }
     };
 
     render() {
@@ -228,10 +258,16 @@ export class Profile extends Component {
                             </Form.Field>
                             <Form.Field>
                                 <label>Position</label>
-                                <input type='text'
-                                       value={this.state.position}
-                                       disabled={this.state.readOnly}
-                                       onChange={(e) => { this.setState({ position: e.target.value }) }} />
+                                <Dropdown fluid
+                                          search
+                                          selection
+                                          placeholder="Position"
+                                          disabled={this.state.readOnly}
+                                          value={ this.state.position }
+                                          options={ this.prepareOptions(this.state.preparedPositions)}
+                                          onChange={ (e, data) => { this.setState({ position: data.value }) }}
+                                          onSearchChange={ (e, value) => { this.setState({ positionSearch: value }) } }
+                                          onKeyDown={ this.onAddNewPositionItem } />
                             </Form.Field>
                             <Form.Field>
                                 <label>Started at</label>
@@ -277,20 +313,23 @@ export class Profile extends Component {
                                         !this.state.readOnly && (
                                             <Table.Row>
                                                 <Table.Cell>
-                                                    <input type="text"
-                                                           id="newSkills"
-                                                           value={this.state.newSkill}
-                                                           onChange={(e) => {
-                                                               this.setState({ newSkill: e.target.value });
-                                                           }}
-                                                           onKeyPress={this.addSkill}/>
+                                                    <Dropdown fluid
+                                                              search
+                                                              selection
+                                                              id="newSkills"
+                                                              placeholder="Skill"
+                                                              options={ this.prepareOptions(this.state.preparedSkills) }
+                                                              value={ this.state.newSkill }
+                                                              onChange={ (e, { value }) => { this.setState({ newSkill: value }) }}
+                                                              onSearchChange={ (e, value) => { this.setState({ skillSearch: value }) } }
+                                                              onKeyDown={ this.onAddNewSkillItem } />
                                                 </Table.Cell>
                                                 <Table.Cell>
                                                     <Icon name="add"
                                                           color="blue"
                                                           style={{cursor: "pointer"}}
                                                           htmlFor="newSkills"
-                                                          onClick={this.addSkill}/>
+                                                          onClick={this.onAddNewSkillItem}/>
                                                 </Table.Cell>
                                             </Table.Row>
                                         )
