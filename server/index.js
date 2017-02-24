@@ -119,7 +119,9 @@ app.post('/employee/update', multerMiddleware, (req, res) => {
 
     let { body: userData } = req;
 
-    userData.imageUrl = `/uploads/${currentUploadedImageName}`;
+    userData.imageUrl = currentUploadedImageName
+        ? `/uploads/${currentUploadedImageName}`
+        : userData.imageUrl;
 
     db.updateEmployeeData(userData._id, userData)
         .then(result => {
