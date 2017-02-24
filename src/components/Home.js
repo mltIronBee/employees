@@ -15,7 +15,7 @@ export class Home extends Component {
         popupTrigger: null
     };
 
-    componentDidMount() {
+    initializeUser = () => {
         const key = localStorage.getItem('Authorization');
 
         if(key) {
@@ -36,6 +36,22 @@ export class Home extends Component {
         } else {
             browserHistory.push('/login');
         }
+    };
+
+    componentDidMount() {
+        this.initializeUser();
+
+        document.addEventListener('keyup', (e) => {
+            if(e.which === 13 && this.state.isModalOpened) {
+                this.onDelete(this.state.currentEmployeeId)
+            } else if(e.which === 27 && this.state.isModalOpened) {
+                this.setState({ isModalOpened: false })
+            }
+        })
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keyup');
     }
 
     onDelete = (id) => {
@@ -139,7 +155,7 @@ export class Home extends Component {
 
                 <Modal basic
                        open={ this.state.isModalOpened }
-                       size='small'>
+                       size="small">
                     <Header icon="user delete" content="Deleting" color="red" />
                     <Modal.Content>
                         <h3>Are you sure you want to delete an employee?</h3>
