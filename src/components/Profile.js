@@ -113,7 +113,7 @@ export class Profile extends Component {
         data.append('lastName', lastName);
         data.append('position', position);
         data.append('startedAt', startedAt);
-        data.append('imageUrl', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
+        data.append('image', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
         // Todo: fix code below
         skills.forEach(skill => {
             data.append('skills[]', skill);
