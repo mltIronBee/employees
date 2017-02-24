@@ -40,3 +40,22 @@ header i {
 .label-image:hover {
   color: #80ccff;
 }
+
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
+  background-color: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  height: 5px;
+  background-color: rgba(255, 255, 255, .3);
+  border-radius: 15px;
+}
+
+.user-popup {
+  width: 40%;
+  max-width: 40%;
+  max-height: 250px;
+  overflow-y: scroll;
+  opacity: 0.9
+}

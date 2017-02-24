@@ -100,29 +100,30 @@ export class Home extends Component {
     arrayToRows = (array) => {
 
         if(array.length) {
-            return array.map((item, index) => (
-                <Table.Row key={ index }>
-                    <Table.Cell>{ index + 1 }</Table.Cell>
-                    <Table.Cell>{ item.firstName }</Table.Cell>
-                    <Table.Cell>{ item.lastName }</Table.Cell>
-                    <Table.Cell>{ item.position }</Table.Cell>
-                    <Table.Cell>{ item.startedAt }</Table.Cell>
-                    <Table.Cell>
-                        <Link to={{ pathname: '/profile', query: { id: item._id } }}>
-                            <UserPopup user={ item }
-                                       trigger={ <Icon name="search"
-                                                       size="large"
-                                                       link color="blue" /> }
-                            />
-                        </Link>
-                        <Icon name="delete"
-                              size="large"
-                              link
-                              color="red"
-                              onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: item._id })} } />
-                    </Table.Cell>
-                </Table.Row>
-            ));
+            return array.map((item, index) => {
+                return (
+                    <Table.Row key={ index }>
+                        <Table.Cell>{ index + 1 }</Table.Cell>
+                        <Table.Cell>{ item.firstName }</Table.Cell>
+
+                        <UserPopup user={ item } trigger={ <Table.Cell>{ item.lastName }</Table.Cell> } />
+                        <Table.Cell>{ item.position }</Table.Cell>
+                        <Table.Cell>{ item.startedAt }</Table.Cell>
+                        <Table.Cell>
+                            <Link to={{ pathname: '/profile', query: { id: item._id } }}>
+                                <Icon name="search"
+                                      size="large"
+                                      link color="blue" />
+                            </Link>
+                            <Icon name="delete"
+                                  size="large"
+                                  link
+                                  color="red"
+                                  onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: item._id })} } />
+                        </Table.Cell>
+                    </Table.Row>
+                );
+            });
         } else {
             return (
                 <Table.Row textAlign="center">

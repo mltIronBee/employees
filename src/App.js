@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Icon } from 'semantic-ui-react';
 
-import './App.css';
+import './Main.css';
 
 class App extends Component {
 
