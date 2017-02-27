@@ -59,3 +59,17 @@ header i {
   overflow-y: scroll;
   opacity: 0.9
 }
+
+.notification {
+  position: absolute;
+  top: 60px;
+  left: 40px;
+  height: 60px;
+  width: 300px;
+  background-color: rgba(0, 0, 0, .7);
+  border-radius: 5px;
+  color: #ffffff;
+  padding: 15px;
+  font-size: 16px;
+  transition: all .6s ease;
+}

@@ -58,7 +58,7 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.post('/user/create', (req, res) => {
+app.post('/register', (req, res) => {
 
     db.createUser(req.body)
         .then(result => {

@@ -20,8 +20,7 @@ const UserSchema = new Schema({
     },
 
     employees: {
-        type: Array,
-        required: true
+        type: Array
     }
 });
 

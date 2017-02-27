@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, browserHistory } from 'react-router';
 import App from './App';
-import { Login } from './components/Login';
+import { Auth } from './components/Auth';
 import { Home } from './components/Home';
 import { Profile } from './components/Profile';
 
@@ -10,7 +10,8 @@ ReactDOM.render(
   <Router history={ browserHistory }>
       <Route path="/" component={ App }>
           <IndexRoute component={ Home }/>
-          <Route path="login" component={ Login }/>
+          <Route path="register" component={ Auth }/>
+          <Route path="login" component={ Auth }/>
           <Route path="profile(/:method)" component={ Profile } />
       </Route>
   </Router>,
