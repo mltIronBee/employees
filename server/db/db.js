@@ -20,12 +20,19 @@ export const initializeDb = () => {
         if(!user) {
             const user = new User({
                 login: 'admin',
-                password: 'admin'
+                password: 'admin',
+                isAdmin: true
             });
 
             user.save();
         }
     })
+};
+
+export const createUser = (data) => {
+    const user = new User(data);
+
+    return user.save();
 };
 
 export const createEmployee = (data) => {

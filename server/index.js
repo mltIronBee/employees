@@ -58,6 +58,17 @@ app.get('/login', (req, res) => {
         });
 });
 
+app.post('/user/create', (req, res) => {
+
+    db.createUser(req.body)
+        .then(result => {
+            res.send(result);
+        })
+        .catch(err => {
+            res.status(400).end(err);
+        })
+});
+
 app.post('/employee/create', multerMiddleware, (req, res) => {
 
     let { body: userData } = req;
