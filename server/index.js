@@ -43,7 +43,7 @@ const multerMiddleware = multer({ storage }).single('image');
 app.use(express.static('build'));
 
 app.get('/login', (req, res) => {
-    let { name, pass } = auth(req);
+    const { name, pass } = auth(req);
 
     db.findByLogin(name)
         .then(user => {
@@ -71,14 +71,15 @@ app.post('/register', (req, res) => {
 
 app.post('/employee/create', multerMiddleware, (req, res) => {
 
-    let { body: userData } = req;
+    const { body: userData } = req;
+    const { name: login } = auth(req);
 
     userData.imageUrl = currentUploadedImageName ? `/uploads/${currentUploadedImageName}` : '';
 
-    db.createEmployee(userData)
-        .then(result => {
+    db.createEmployee(userData, login)
+        .then(employee => {
             currentUploadedImageName = '';
-            res.send(result);
+            res.send(employee);
         })
         .catch(err => {
             currentUploadedImageName = '';
@@ -117,7 +118,9 @@ app.get('/employee', (req, res) => {
 
 app.get('/employees', (req, res) => {
 
-    db.getAllEmployees()
+    const { name: login } = auth(req);
+
+    db.getAllEmployees(login)
         .then(result => {
             res.send(result);
         })
@@ -128,7 +131,7 @@ app.get('/employees', (req, res) => {
 
 app.post('/employee/update', multerMiddleware, (req, res) => {
 
-    let { body: userData } = req;
+    const { body: userData } = req;
 
     userData.imageUrl = currentUploadedImageName
         ? `/uploads/${currentUploadedImageName}`

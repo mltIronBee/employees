@@ -125,12 +125,11 @@ export class Profile extends Component {
 
         http.post(requestUrl, data)
             .then(res => {
-                console.log(res);
-                this.setState({ readOnly: true });
-                this.showAlert(isCreating ? 'User has been successfully created' : 'Data is updated');
-
                 if(isCreating) {
                     browserHistory.push('/');
+                } else {
+                    this.setState({ readOnly: true });
+                    this.showAlert(isCreating ? 'User has been successfully created' : 'Data is updated');
                 }
             })
             .catch(err => {

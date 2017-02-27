@@ -17,10 +17,6 @@ const UserSchema = new Schema({
     isAdmin: {
         type: Boolean,
         default: false
-    },
-
-    employees: {
-        type: Array
     }
 });
 

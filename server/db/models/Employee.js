@@ -3,10 +3,15 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const EmployeeSchema = new Schema({
-   firstName: {
-       type: String,
-       required: true
-   },
+
+    _leader: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    firstName: {
+        type: String,
+        required: true
+    },
     lastName: {
        type: String,
        required: true

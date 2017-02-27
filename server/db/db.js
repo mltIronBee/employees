@@ -14,7 +14,6 @@ export const findByLogin = (login) => {
 };
 
 export const initializeDb = () => {
-
     findByLogin('admin').then(user => {
 
         if(!user) {
@@ -30,19 +29,23 @@ export const initializeDb = () => {
 };
 
 export const createUser = (data) => {
-    const user = new User(data);
-
-    return user.save();
+    return new User(data).save();
 };
 
-export const createEmployee = (data) => {
-    const employee = new Employee(data);
+export const createEmployee = (data, login) => {
+    return findByLogin(login)
+        .then(user => {
+            const employeeData = Object.assign(data, {_leader: user._id});
 
-    return employee.save();
+            return new Employee(employeeData).save();
+        });
 };
 
-export const getAllEmployees = () => {
-    return Employee.find();
+export const getAllEmployees = (login) => {
+    return findByLogin(login)
+        .then(user => {
+            return Employee.find({ _leader: user._id });
+        })
 };
 
 export const getSkillsAndPositions = () => {
@@ -68,7 +71,6 @@ export const getSkillsAndPositions = () => {
 };
 
 export const getEmployeeById = (_id) => {
-
     return getSkillsAndPositions()
         .then(([skills, positions]) => {
             const employeePromise = Employee.findById(_id);
