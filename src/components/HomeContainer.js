@@ -119,6 +119,7 @@ export class HomeContainer extends Component {
             return array.map(({ _id, firstName, lastName, position, startedAt }, index) => ({
                 index: index + 1,
                 firstName,
+                // Todo: FIX! UserPopup is missed
                 lastName,
                 position,
                 startedAt,
@@ -156,7 +157,7 @@ export class HomeContainer extends Component {
         ]
     });
 
-    employeesTableProps = () => ({
+    getEmployeesTableProps = () => ({
         dropdownOptions: this.prepareOptions(),
         onDropdownChange: this.dropdownOnChange,
         headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions'],
@@ -171,7 +172,7 @@ export class HomeContainer extends Component {
 
     render() {
         return (
-            <Home getEmployeesTableProps={ this.employeesTableProps } />
+            <Home getEmployeesTableProps={ this.getEmployeesTableProps } />
         );
     }
 }

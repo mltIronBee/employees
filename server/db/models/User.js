@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
+
     login: {
         type: String,
         unique: true,
@@ -13,6 +14,21 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
+
+    firstName: {
+        type: String,
+        required: true
+    },
+
+    lastName: {
+        type: String,
+        required: true
+    },
+
+    employees: [{
+        type: Schema.types.ObjectId,
+        ref: 'Employee'
+    }],
 
     isAdmin: {
         type: Boolean,
