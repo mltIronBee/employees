@@ -3,7 +3,8 @@ import { browserHistory } from 'react-router';
 import basic from 'basic-auth-header';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
-import { Grid, Form, Button, Segment } from 'semantic-ui-react'
+import { Grid, Form, Button, Segment } from 'semantic-ui-react';
+import { Notification } from './Notification';
 
 export class Auth extends Component {
 
@@ -11,8 +12,7 @@ export class Auth extends Component {
         authType: '',
         login: '',
         password: '',
-        confirmPassword: '',
-        validationError: ''
+        confirmPassword: ''
     };
 
     componentDidMount() {
@@ -28,8 +28,8 @@ export class Auth extends Component {
 
         let { login, password } = this.state;
 
-        if(!login.length) return this.setState({ validationError: 'Login must be required!' });
-        if(!password.length) return this.setState({ validationError: 'Password must be required!' });
+        if(!login.length) return this.notification.show('Login must be required!', 'danger');
+        if(!password.length) return this.notification.show('Password must be required!', 'danger');
 
         const key = basic(login, password);
 
@@ -41,7 +41,7 @@ export class Auth extends Component {
                 browserHistory.push('/');
             })
             .catch(err => {
-                this.setState({ validationError: 'Authorization error!' })
+                this.notification.show('Authorization error!', 'danger')
             });
     };
 
@@ -50,10 +50,10 @@ export class Auth extends Component {
 
         let { login, password, confirmPassword } = this.state;
 
-        if(!login) return this.setState({ validationError: 'Login must be required' });
-        if(!password) return this.setState({ validationError: 'Password must be required' });
-        if(password.length < 6) return this.setState({ validationError: 'Password must be at least 8 characters' });
-        if(password !== confirmPassword) return this.setState({ validationError: 'Password doesn\'t match'});
+        if(!login) return this.notification.show('Login must be required', 'danger');
+        if(!password) return this.notification.show('Password must be required', 'danger');
+        if(password.length < 6) return this.notification.show('Password must be at least 8 characters', 'danger');
+        if(password !== confirmPassword) return this.notification.show('Password doesn\'t match', 'danger');
 
         http.post(`${apiPrefix}/register`, {
             login,
@@ -74,14 +74,9 @@ export class Auth extends Component {
         return (
             <Grid container centered columns={2}>
                 <Grid.Column textAlign="left">
+                    <Notification ref={ (node) => { this.notification = node } } />
                     <Segment color="blue" style={{ marginTop: '40px' }} raised>
                         <Form onSubmit={ this.state.authType === 'register' ? this.onRegister : this.onLogin }>
-                            {
-                                this.state.validationError
-                                    && <Segment inverted color='red' tertiary>
-                                            { this.state.validationError }
-                                        </Segment>
-                            }
                             <Form.Field>
                                 <label>Login</label>
                                 <input type="text"

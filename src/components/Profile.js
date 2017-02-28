@@ -3,6 +3,7 @@ import { browserHistory } from 'react-router';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Grid, Form, Button, Icon, Table, Segment, Image, Dropdown } from 'semantic-ui-react';
+import { Notification } from './Notification';
 
 export class Profile extends Component {
 
@@ -81,20 +82,6 @@ export class Profile extends Component {
         this.setState({skills: skills});
     };
 
-    showAlert = (message, isError = false) => {
-        this.setState({
-            messageError: isError,
-            message
-        });
-
-        setTimeout(() => {
-            this.setState({
-                messageError: false,
-                message: ''
-            });
-        }, 3000);
-    };
-
     saveData = (e) => {
 
         e.preventDefault();
@@ -102,10 +89,10 @@ export class Profile extends Component {
         let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
-        if(!firstName) return this.showAlert('First name must be required', true);
-        if(!lastName) return this.showAlert('Last name must be required', true);
-        if(!position) return this.showAlert('Position must be required', true);
-        if(!startedAt) return this.showAlert('Start date must be required', true);
+        if(!firstName) return this.notification.show('First name must be required!', 'danger');
+        if(!lastName) return this.notification.show('Last name must be required!', 'danger');
+        if(!position) return this.notification.show('Position must be required!', 'danger');
+        if(!startedAt) return this.notification.show('Start date must be required!', 'danger');
 
         const data = new FormData();
 
@@ -129,12 +116,11 @@ export class Profile extends Component {
                     browserHistory.push('/');
                 } else {
                     this.setState({ readOnly: true });
-                    this.showAlert(isCreating ? 'User has been successfully created' : 'Data is updated');
+                    this.notification.show('Data is updated');
                 }
             })
             .catch(err => {
-                console.log(err);
-                this.showAlert(isCreating ? 'Creating error!' : 'Updating error!', true);
+                this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
             });
     };
 
@@ -178,12 +164,12 @@ export class Profile extends Component {
         if (e.which === 13 || e.type === 'click') {
             e.preventDefault();
             if (!this.state.newSkill && !this.state.skillSearch) {
-                this.showAlert('Skill must be required!', true);
+                this.notification.show('Skill must be required!', 'danger');
             } else {
                 let skillToSave = this.state.skillSearch || this.state.newSkill;
 
                 if(this.state.skills.includes(skillToSave)) {
-                    this.showAlert('Skill already exist', true);
+                    this.notification.show('Skill already exist!', 'danger');
                 } else {
                     this.setState(prevState => ({
                         skills: [...prevState.skills, skillToSave],
@@ -201,6 +187,7 @@ export class Profile extends Component {
     render() {
         return (
             <Grid container centered columns={2}>
+                <Notification ref={ (node) => { this.notification = node } }/>
                 <Grid.Column textAlign="left">
                     <Segment raised color="blue" style={{marginTop: "40px"}}>
                         <Form onKeyDown={(e) => {
@@ -246,13 +233,6 @@ export class Profile extends Component {
                                     )
                                 }
                             </Form.Field>
-                            {
-                                this.state.message && (
-                                    <Segment inverted color={!this.state.messageError ? 'blue' : 'red'} tertiary>
-                                        {this.state.message}
-                                    </Segment>
-                                )
-                            }
                             <Form.Field>
                                 <label>First name</label>
                                 <input type='text'
