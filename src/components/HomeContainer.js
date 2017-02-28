@@ -3,7 +3,6 @@ import { browserHistory, Link } from 'react-router';
 import { Table, Icon } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
-import { UserPopup } from './UserPopup';
 import { Home } from './Home';
 
 export class HomeContainer extends Component {
@@ -49,7 +48,6 @@ export class HomeContainer extends Component {
     }
 
     onModalActions = (e) => {
-
         if(e.which === 13 && this.state.isModalOpened) {
             this.onEmployeeDelete(this.state.currentEmployeeId)
         } else if(e.which === 27 && this.state.isModalOpened) {
@@ -98,7 +96,6 @@ export class HomeContainer extends Component {
     };
 
     dropdownOnChange = (e, data) => {
-
         this.filterTable(data.value);
     };
 
@@ -117,47 +114,49 @@ export class HomeContainer extends Component {
         this.setState({ filtered })
     };
 
-    arrayToRows = (array) => {
-
-        if(array.length) {
-            return array.map((item, index) => {
-                return (
-                    <Table.Row key={ index }>
-                        <Table.Cell>{ index + 1 }</Table.Cell>
-                        <Table.Cell>{ item.firstName }</Table.Cell>
-
-                        <UserPopup user={ item } trigger={ <Table.Cell>{ item.lastName }</Table.Cell> } />
-                        <Table.Cell>{ item.position }</Table.Cell>
-                        <Table.Cell>{ item.startedAt }</Table.Cell>
-                        <Table.Cell>
-                            <Link to={{ pathname: '/profile', query: { id: item._id } }}>
-                                <Icon name="search"
-                                      size="large"
-                                      link color="blue" />
-                            </Link>
-                            <Icon name="delete"
-                                  size="large"
-                                  link
-                                  color="red"
-                                  onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: item._id })} } />
-                        </Table.Cell>
-                    </Table.Row>
-                );
-            });
-        } else {
-            return (
-                <Table.Row textAlign="center">
-                    <Table.Cell>No employees</Table.Cell>
-                </Table.Row>
+    prepareEmployeesTableData = (array) => {
+        return array.map(({ _id, firstName, lastName, position, startedAt }, index) => ({
+            index: index + 1,
+            firstName,
+            lastName,
+            position,
+            startedAt,
+            actions: (
+                <Table.Cell key={ index }>
+                    <Link to={{ pathname: '/profile', query: { id: _id } }}>
+                        <Icon name="search"
+                              size="large"
+                              link color="blue" />
+                    </Link>
+                    <Icon name="delete"
+                          size="large"
+                          link
+                          color="red"
+                          onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: _id })} } />
+                </Table.Cell>
             )
-        }
+        }));
     };
+
+    renderEmployeesTable = ({ index, firstName, lastName, position, startedAt, actions }) => ({
+        key: index,
+        cells: [
+            index,
+            firstName,
+            lastName,
+            position,
+            startedAt,
+            actions
+        ]
+    });
 
     render() {
         return (
-            <Home tableBody={ this.state.filtered.length
-                ? this.arrayToRows(this.state.filtered)
-                : this.arrayToRows(this.state.employees) }
+            <Home headerRow={['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions']}
+                  tableData={ this.state.filtered.length
+                      ? this.prepareEmployeesTableData(this.state.filtered)
+                      : this.prepareEmployeesTableData(this.state.employees) }
+                  renderBodyRow={ this.renderEmployeesTable }
                   dropdownOptions={ this.prepareOptions() }
                   onDropdownChange={ this.dropdownOnChange }
                   onEmployeeDelete={ () => { this.onEmployeeDelete(this.state.currentEmployeeId) } }

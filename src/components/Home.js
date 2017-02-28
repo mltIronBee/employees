@@ -46,22 +46,11 @@ export const Home = (props) => (
                         Add new employee
                     </Button>
                 </Link>
-                <Table singleLine color="blue">
-                    <Table.Header>
-                        <Table.Row>
-                            <Table.HeaderCell>#</Table.HeaderCell>
-                            <Table.HeaderCell>First Name</Table.HeaderCell>
-                            <Table.HeaderCell>Last Name</Table.HeaderCell>
-                            <Table.HeaderCell>Position</Table.HeaderCell>
-                            <Table.HeaderCell>Started At</Table.HeaderCell>
-                            <Table.HeaderCell>Actions</Table.HeaderCell>
-                        </Table.Row>
-                    </Table.Header>
-
-                    <Table.Body>
-                        { props.tableBody }
-                    </Table.Body>
-                </Table>
+                <Table singleLine
+                       color="blue"
+                       headerRow={ props.headerRow }
+                       renderBodyRow={ props.renderBodyRow }
+                       tableData={ props.tableData } />
             </Grid.Column>
         </Grid.Row>
 
