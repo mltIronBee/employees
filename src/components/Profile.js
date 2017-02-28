@@ -226,7 +226,6 @@ export class Profile extends Component {
                                         <div style={{textAlign: "center", marginTop: "20px"}}>
                                             <label className="label-image" htmlFor="image" >
                                                 <Icon name="download" /> Download profile image
-
                                             </label>
                                             <input type="file" className="upload-image" id="image" onChange={this.onUpload}/>
                                         </div>

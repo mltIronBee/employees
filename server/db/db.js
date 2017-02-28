@@ -86,7 +86,3 @@ export const updateEmployeeData = (_id, data) => {
 export const deleteEmployee = (_id) => {
     return Employee.findByIdAndRemove(_id);
 };
-
-
-
-
