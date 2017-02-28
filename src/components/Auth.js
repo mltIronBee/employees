@@ -11,6 +11,8 @@ export class Auth extends Component {
     state = {
         authType: '',
         login: '',
+        firstName: '',
+        lastName: '',
         password: '',
         confirmPassword: ''
     };
@@ -41,22 +43,26 @@ export class Auth extends Component {
                 browserHistory.push('/');
             })
             .catch(err => {
-                this.notification.show('Authorization error!', 'danger')
+                this.notification.show('Authorization error!', 'danger');
             });
     };
 
     onRegister = (e) => {
         e.preventDefault();
 
-        let { login, password, confirmPassword } = this.state;
+        let { login, firstName, lastName, password, confirmPassword } = this.state;
 
         if(!login) return this.notification.show('Login must be required', 'danger');
+        if(!firstName) return this.notification.show('Fist name must be required', 'danger');
+        if(!lastName) return this.notification.show('Last name must be required', 'danger');
         if(!password) return this.notification.show('Password must be required', 'danger');
         if(password.length < 6) return this.notification.show('Password must be at least 8 characters', 'danger');
         if(password !== confirmPassword) return this.notification.show('Password doesn\'t match', 'danger');
 
         http.post(`${apiPrefix}/register`, {
             login,
+            firstName,
+            lastName,
             password
         })
             .then(({ data: user }) => {
@@ -66,7 +72,11 @@ export class Auth extends Component {
                 browserHistory.push('/');
             })
             .catch(err => {
-                console.log(err);
+                if(err.response.status === 422) {
+                    this.notification.show('This login has been taken!', 'danger');
+                } else {
+                    this.notification.show('Registration error!', 'danger');
+                }
             });
     };
 
@@ -80,28 +90,52 @@ export class Auth extends Component {
                             <Form.Field>
                                 <label>Login</label>
                                 <input type="text"
-                                       placeholder='Type your login'
+                                       placeholder="Type your login"
                                        name="login"
                                        value={ this.state.login }
-                                       onChange={(e) => { this.setState({ login: e.target.value }) }} />
+                                       onChange={(e) => { this.setState({ login: e.target.value }) } } />
                             </Form.Field>
+                            {
+                                this.state.authType === 'register' && (
+                                    <Form.Field>
+                                        <label>First name</label>
+                                        <input type="text"
+                                               placeholder="First name"
+                                               name="firstName"
+                                               value={ this.state.firstName }
+                                               onChange={(e) => { this.setState({ firstName: e.target.value }) } }/>
+                                    </Form.Field>
+                                )
+                            }
+                            {
+                                this.state.authType === 'register' && (
+                                    <Form.Field>
+                                        <label>Last name</label>
+                                        <input type="text"
+                                               placeholder="Last name"
+                                               name="lastName"
+                                               value={ this.state.lastName }
+                                               onChange={(e) => { this.setState({ lastName: e.target.value }) } }/>
+                                    </Form.Field>
+                                )
+                            }
                             <Form.Field>
                                 <label>Password</label>
                                 <input type="password"
-                                       placeholder='Type your password'
+                                       placeholder="Type your password"
                                        name="password"
                                        value={ this.state.password }
-                                       onChange={(e) => { this.setState({ password: e.target.value }) }}/>
+                                       onChange={ (e) => { this.setState({ password: e.target.value }) } }/>
                             </Form.Field>
                             {
                                 this.state.authType === 'register' && (
                                     <Form.Field>
                                         <label>Confirm password</label>
                                         <input type="password"
-                                               placeholder='Confirm your password'
+                                               placeholder="Confirm your password"
                                                name="password"
                                                value={ this.state.confirmPassword }
-                                               onChange={(e) => { this.setState({ confirmPassword: e.target.value }) }}/>
+                                               onChange={(e) => { this.setState({ confirmPassword: e.target.value }) } }/>
                                     </Form.Field>
                                 )
                             }

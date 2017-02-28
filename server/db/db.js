@@ -33,18 +33,26 @@ export const createUser = (data) => {
 };
 
 export const createEmployee = (data, login) => {
-    return findByLogin(login)
-        .then(user => {
-            const employeeData = Object.assign(data, {_leader: user._id});
+    return new Employee(data).save()
+        .then(employee => {
+            return Promise.all([findByLogin(login), employee]);
+        })
+        .then(([user, employee]) => {
+            user.employees = [
+                ...user.employees,
+                employee._id
+            ];
 
-            return new Employee(employeeData).save();
+            return Promise.all([employee, user.save()])
         });
 };
 
 export const getAllEmployees = (login) => {
     return findByLogin(login)
+        .populate('employees')
+        .exec()
         .then(user => {
-            return Employee.find({ _leader: user._id });
+            return user.employees
         })
 };
 

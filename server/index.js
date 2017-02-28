@@ -39,6 +39,17 @@ const storage = multer.diskStorage({
 
 const multerMiddleware = multer({ storage }).single('image');
 
+const uniqueLoginMiddleware = (req, res, next) => {
+    db.findByLogin(req.body.login)
+        .then(user => {
+            if(user) {
+                res.status(422).send('User already exists!')
+            } else {
+                next();
+            }
+        })
+};
+
 // RESTful API
 app.use(express.static('build'));
 
@@ -58,7 +69,7 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', uniqueLoginMiddleware, (req, res) => {
 
     db.createUser(req.body)
         .then(result => {
@@ -71,13 +82,13 @@ app.post('/register', (req, res) => {
 
 app.post('/employee/create', multerMiddleware, (req, res) => {
 
-    const { body: userData } = req;
+    const { body: employeeData } = req;
     const { name: login } = auth(req);
 
-    userData.imageUrl = currentUploadedImageName ? `/uploads/${currentUploadedImageName}` : '';
+    employeeData.imageUrl = currentUploadedImageName ? `/uploads/${currentUploadedImageName}` : '';
 
-    db.createEmployee(userData, login)
-        .then(employee => {
+    db.createEmployee(employeeData, login)
+        .then(([employee]) => {
             currentUploadedImageName = '';
             res.send(employee);
         })
@@ -121,8 +132,8 @@ app.get('/employees', (req, res) => {
     const { name: login } = auth(req);
 
     db.getAllEmployees(login)
-        .then(result => {
-            res.send(result);
+        .then(employees => {
+            res.send(employees);
         })
         .catch(err => {
             res.status(400).send(err);
