@@ -115,27 +115,33 @@ export class HomeContainer extends Component {
     };
 
     prepareEmployeesTableData = (array) => {
-        return array.map(({ _id, firstName, lastName, position, startedAt }, index) => ({
-            index: index + 1,
-            firstName,
-            lastName,
-            position,
-            startedAt,
-            actions: (
-                <Table.Cell key={ index }>
-                    <Link to={{ pathname: '/profile', query: { id: _id } }}>
-                        <Icon name="search"
+        if(array.length) {
+            return array.map(({ _id, firstName, lastName, position, startedAt }, index) => ({
+                index: index + 1,
+                firstName,
+                lastName,
+                position,
+                startedAt,
+                actions: (
+                    <Table.Cell key={ index }>
+                        <Link to={{ pathname: '/profile', query: { id: _id } }}>
+                            <Icon name="search"
+                                  size="large"
+                                  link color="blue" />
+                        </Link>
+                        <Icon name="delete"
                               size="large"
-                              link color="blue" />
-                    </Link>
-                    <Icon name="delete"
-                          size="large"
-                          link
-                          color="red"
-                          onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: _id })} } />
-                </Table.Cell>
-            )
-        }));
+                              link
+                              color="red"
+                              onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: _id })} } />
+                    </Table.Cell>
+                )
+            }));
+        } else {
+            return [{
+                index: 'No employees'
+            }]
+        }
     };
 
     renderEmployeesTable = ({ index, firstName, lastName, position, startedAt, actions }) => ({
