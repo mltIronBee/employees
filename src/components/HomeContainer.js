@@ -156,18 +156,22 @@ export class HomeContainer extends Component {
         ]
     });
 
+    employeesTableProps = () => ({
+        dropdownOptions: this.prepareOptions(),
+        onDropdownChange: this.dropdownOnChange,
+        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions'],
+        renderBodyRow: this.renderEmployeesTable,
+        tableData: this.state.filtered.length
+            ? this.prepareEmployeesTableData(this.state.filtered)
+            : this.prepareEmployeesTableData(this.state.employees),
+        onEmployeeDelete: () => { this.onEmployeeDelete(this.state.currentEmployeeId) },
+        onModalClose: () => { this.setState({ isModalOpened: false }) },
+        isModalOpened: this.state.isModalOpened
+    });
+
     render() {
         return (
-            <Home headerRow={['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions']}
-                  tableData={ this.state.filtered.length
-                      ? this.prepareEmployeesTableData(this.state.filtered)
-                      : this.prepareEmployeesTableData(this.state.employees) }
-                  renderBodyRow={ this.renderEmployeesTable }
-                  dropdownOptions={ this.prepareOptions() }
-                  onDropdownChange={ this.dropdownOnChange }
-                  onEmployeeDelete={ () => { this.onEmployeeDelete(this.state.currentEmployeeId) } }
-                  isModalOpened={ this.state.isModalOpened }
-                  onModalClose={ () => { this.setState({ isModalOpened: false }) } } />
+            <Home getEmployeesTableProps={ this.employeesTableProps } />
         );
     }
 }

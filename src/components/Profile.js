@@ -238,6 +238,7 @@ export class Profile extends Component {
                                 <input type='text'
                                        value={this.state.firstName}
                                        disabled={this.state.readOnly}
+                                       placeholder="First name"
                                        onChange={(e) => { this.setState({ firstName: e.target.value }) }} />
                             </Form.Field>
                             <Form.Field>
@@ -245,6 +246,7 @@ export class Profile extends Component {
                                 <input type='text'
                                        value={this.state.lastName}
                                        disabled={this.state.readOnly}
+                                       placeholder="Last name"
                                        onChange={(e) => { this.setState({ lastName: e.target.value }) }} />
                             </Form.Field>
                             <Form.Field>

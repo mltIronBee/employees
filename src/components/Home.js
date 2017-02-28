@@ -1,37 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Grid, Table, Dropdown, Button } from 'semantic-ui-react';
-import { DeleteEmployeeModal } from './DeleteEmployeeModal';
+import { Grid, Button } from 'semantic-ui-react';
+import { EmployeesTable } from './EmployeesTable';
 
 export const Home = (props) => (
     <Grid container>
-        <DeleteEmployeeModal isModalOpened={ props.isModalOpened }
-                             onModalClose={ props.onModalClose }
-                             onEmployeeDelete={ props.onEmployeeDelete } />
         <Grid.Row>
-            <Grid.Column width={8} floated="right">
-                <Dropdown fluid
-                          multiple
-                          search
-                          selection
-                          options={ props.dropdownOptions }
-                          placeholder="Search parameters"
-                          style={{ marginTop: '40px' }}
-                          onChange={ props.onDropdownChange } />
-            </Grid.Column>
-        </Grid.Row>
-        <Grid.Row>
-            <Grid.Column>
+            <Grid.Column floated="right">
                 <Link to="profile/create">
-                    <Button floated="right" color="blue" style={{ margin: '20px 0' }}>
+                    <Button floated="right" color="blue" style={{ marginTop: '40px' }}>
                         Add new employee
                     </Button>
                 </Link>
-                <Table singleLine
-                       color="blue"
-                       headerRow={ props.headerRow }
-                       renderBodyRow={ props.renderBodyRow }
-                       tableData={ props.tableData } />
+            </Grid.Column>
+        </Grid.Row>
+        <Grid.Row>
+            <Grid.Column width={16}>
+                <EmployeesTable { ...props.getEmployeesTableProps() } />
             </Grid.Column>
         </Grid.Row>
     </Grid>
