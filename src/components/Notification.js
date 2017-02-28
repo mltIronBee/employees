@@ -17,7 +17,7 @@ export class Notification extends Component {
 
         setTimeout(() => {
             this.setState({ isActive: false })
-        }, 2000);
+        }, 3000);
     }
 
     defineColor(color) {

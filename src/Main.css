@@ -71,10 +71,12 @@ header i {
   padding: 15px;
   font-size: 16px;
   opacity: 0;
-  transition: all .6s ease;
   z-index: 999;
+  transition: all .5s cubic-bezier(.7, 0, .3, 1);
+  transform: translateX(-100px);
 }
 
 .notification.active {
   opacity: 1;
+  transform: translateX(0);
 }
