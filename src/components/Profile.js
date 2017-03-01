@@ -151,12 +151,18 @@ export class Profile extends Component {
 
     onAddNewPositionItem = (e) => {
         if(e.which === 13) {
-            this.setState(prevState => ({
-                preparedPositions: [
-                    ...prevState.preparedPositions,
-                    prevState.positionSearch
-                ]
-            }));
+            if(this.state.preparedPositions.includes(this.state.positionSearch)) {
+                this.notification.show('This position already exists!', 'danger');
+            } else if(!this.state.positionSearch) {
+                this.notification.show('Position must be required!', 'danger');
+            } else {
+                this.setState(prevState => ({
+                    preparedPositions: [
+                        ...prevState.preparedPositions,
+                        prevState.positionSearch
+                    ]
+                }));
+            }
         }
     };
 
