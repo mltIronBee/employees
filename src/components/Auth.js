@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import basic from 'basic-auth-header';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
@@ -22,6 +22,25 @@ export class Auth extends Component {
             this.setState({ authType: 'register' });
         } else {
             this.setState({ authType: 'login' });
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.route.path === 'register') {
+            this.setState({
+                authType: 'register',
+                login: '',
+                password: ''
+            });
+        } else if(nextProps.route.path === 'login') {
+            this.setState({
+                authType: 'login',
+                login: '',
+                firstName: '',
+                lastName: '',
+                password: '',
+                confirmPassword: ''
+            })
         }
     }
 
@@ -87,6 +106,10 @@ export class Auth extends Component {
                     <Notification ref={ (node) => { this.notification = node } } />
                     <Segment color="blue" style={{ marginTop: '40px' }} raised>
                         <Form onSubmit={ this.state.authType === 'register' ? this.onRegister : this.onLogin }>
+                            <Link to={ this.state.authType === 'register' ? 'login' : 'register' }
+                                  style={{ float: 'right' }}>
+                                { this.state.authType === 'register' ? 'Login' : 'Register' }
+                            </Link>
                             <Form.Field>
                                 <label>Login</label>
                                 <input type="text"

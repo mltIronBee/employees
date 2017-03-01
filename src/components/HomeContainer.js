@@ -69,6 +69,7 @@ export class HomeContainer extends Component {
     };
 
     onEmployeeDelete = (id) => {
+        //Todo: Fix bug, in admin panel employee isn't deleted from state
         http.post(`${apiPrefix}/employee/delete`, { id })
             .then(res => {
                 this.setState((prevState) => ({
