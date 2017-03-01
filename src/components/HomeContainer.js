@@ -4,6 +4,7 @@ import { Table, Icon } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
+import { Admin } from './Admin';
 import { UserPopup } from './UserPopup';
 
 export class HomeContainer extends Component {
@@ -176,9 +177,12 @@ export class HomeContainer extends Component {
         ]
     });
 
-    getEmployeesTableProps = () => ({
+    getEmployeesSkillsSearchData = () => ({
         dropdownOptions: this.prepareOptions(),
-        onDropdownChange: this.dropdownOnChange,
+        onDropdownChange: this.dropdownOnChange
+    });
+
+    getEmployeesTableProps = () => ({
         headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions'],
         renderBodyRow: this.renderEmployeesTable,
         tableData: this.state.filtered.length
@@ -191,7 +195,10 @@ export class HomeContainer extends Component {
 
     render() {
         return (
-            <Home getEmployeesTableProps={ this.getEmployeesTableProps } />
+            //<Admin getEmployeesTableProps={ this.getEmployeesTableProps }
+            //       getEmployeesSkillsSearchData = {this.getEmployeesSkillsSearchData}/>
+            <Home getEmployeesTableProps={ this.getEmployeesTableProps }
+                  getEmployeesSkillsSearchData={this.getEmployeesSkillsSearchData} />
         );
     }
 }

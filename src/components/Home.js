@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Grid, Button } from 'semantic-ui-react';
 import { EmployeesTable } from './EmployeesTable';
+import { SearchDropdown } from './SearchDropdown';
 
 export const Home = (props) => (
     <Grid container>
@@ -15,8 +16,11 @@ export const Home = (props) => (
             </Grid.Column>
         </Grid.Row>
         <Grid.Row>
+            <Grid.Column width={8} floated="right">
+                <SearchDropdown { ...props.getEmployeesSkillsSearchData()}/>
+            </Grid.Column>
             <Grid.Column width={16}>
-                <EmployeesTable { ...props.getEmployeesTableProps() } />
+                <EmployeesTable { ...props.getEmployeesTableProps() } containerStyles={{ marginTop: '20px' }} />
             </Grid.Column>
         </Grid.Row>
     </Grid>
