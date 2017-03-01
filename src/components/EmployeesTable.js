@@ -8,14 +8,11 @@ export const EmployeesTable = (props) => (
                              onModalClose={ props.onModalClose }
                              onEmployeeDelete={ props.onEmployeeDelete } />
         <Grid.Column width={16}>
-            <div style={ props.tableStyles }
-                 className="custom-scroll">
-                <Table singleLine
-                       color="blue"
-                       headerRow={ props.headerRow }
-                       renderBodyRow={ props.renderBodyRow }
-                       tableData={ props.tableData } />
-            </div>
+            <Table singleLine
+                   color="blue"
+                   headerRow={ props.headerRow }
+                   renderBodyRow={ props.renderBodyRow }
+                   tableData={ props.tableData } />
         </Grid.Column>
     </Grid>
 );
