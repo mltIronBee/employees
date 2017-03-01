@@ -34,8 +34,8 @@ export const getAllUsers = (adminLogin) => {
     return User
         .find()
         .populate('employees')
-        .exec()
         .then(users => {
+            //Todo: reduce password from user object to not have it on client
             return users.filter(user => user.login !== adminLogin);
         });
 };
@@ -62,7 +62,6 @@ export const createEmployee = (data, login) => {
 export const getAllEmployees = (login) => {
     return findByLogin(login)
         .populate('employees')
-        .exec()
         .then(user => {
             return user.employees
         })

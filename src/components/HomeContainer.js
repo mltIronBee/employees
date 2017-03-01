@@ -11,9 +11,9 @@ export class HomeContainer extends Component {
 
     state = {
         employees: [],
+        filtered: [],
         users: [],
         isAdmin: false,
-        filtered: [],
         isModalOpened: false,
         currentEmployeeId: ''
     };
@@ -30,9 +30,7 @@ export class HomeContainer extends Component {
                         return http.get(`${apiPrefix}/admin`)
                             .then(({ data: users }) => {
                                 this.setState({
-                                    users: users.forEach(user => {
-                                        user.employees = this.formatEmployeesDate(user.employees)
-                                    }),
+                                    users,
                                     isAdmin: true
                                 });
                             });
@@ -193,12 +191,23 @@ export class HomeContainer extends Component {
         isModalOpened: this.state.isModalOpened
     });
 
+    onUserClick = (userId) => {
+        let employees = this.state.users
+            .find(user => user._id === userId)
+            .employees;
+
+        employees = this.formatEmployeesDate(employees);
+
+        this.setState({ employees });
+    };
+
     render() {
-        return (
-            //<Admin getEmployeesTableProps={ this.getEmployeesTableProps }
-            //       getEmployeesSkillsSearchData = {this.getEmployeesSkillsSearchData}/>
-            <Home getEmployeesTableProps={ this.getEmployeesTableProps }
-                  getEmployeesSkillsSearchData={this.getEmployeesSkillsSearchData} />
-        );
+        return this.state.isAdmin
+            ? <Admin getEmployeesTableProps={ this.getEmployeesTableProps }
+                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
+                     users={ this.state.users }
+                     onUserClick={ this.onUserClick } />
+            : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
+                    getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData } />
     }
 }
