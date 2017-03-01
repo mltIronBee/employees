@@ -4,15 +4,17 @@ import { Table, Icon } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
+import { UserPopup } from './UserPopup';
 
 export class HomeContainer extends Component {
 
     state = {
         employees: [],
+        users: [],
+        isAdmin: false,
         filtered: [],
         isModalOpened: false,
-        currentEmployeeId: '',
-        popupTrigger: null
+        currentEmployeeId: ''
     };
 
     initializeUser = () => {
@@ -22,11 +24,23 @@ export class HomeContainer extends Component {
             setAuthHeader(key);
 
             http.get(`${apiPrefix}/login`)
-                .then((res) => {
-                    return http.get(`${apiPrefix}/employees`)
-                })
-                .then(({ data }) => {
-                    this.setState({ employees: this.formatEmployeesDate(data) })
+                .then(({ data: user }) => {
+                    if(user.isAdmin) {
+                        return http.get(`${apiPrefix}/admin`)
+                            .then(({ data: users }) => {
+                                this.setState({
+                                    users: users.forEach(user => {
+                                        user.employees = this.formatEmployeesDate(user.employees)
+                                    }),
+                                    isAdmin: true
+                                });
+                            });
+                    } else {
+                        return http.get(`${apiPrefix}/employees`)
+                            .then(({ data }) => {
+                                this.setState({ employees: this.formatEmployeesDate(data) })
+                            });
+                    }
                 })
                 .catch(err => {
                     localStorage.removeItem('Authorization');
@@ -116,16 +130,21 @@ export class HomeContainer extends Component {
 
     prepareEmployeesTableData = (array) => {
         if(array.length) {
-            return array.map(({ _id, firstName, lastName, position, startedAt }, index) => ({
+            return array.map((employee, index) => ({
                 index: index + 1,
-                firstName,
-                // Todo: FIX! UserPopup is missed
-                lastName,
-                position,
-                startedAt,
+                firstName: employee.firstName,
+                lastName: (
+                    <UserPopup user={ employee }
+                               key={ index + 2 }
+                               trigger={
+                                   <Table.Cell>{ employee.lastName }</Table.Cell>
+                               } />
+                ),
+                position: employee.position,
+                startedAt: employee.startedAt,
                 actions: (
-                    <Table.Cell key={ index }>
-                        <Link to={{ pathname: '/profile', query: { id: _id } }}>
+                    <Table.Cell key={ index + 3 }>
+                        <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
                             <Icon name="search"
                                   size="large"
                                   link color="blue" />
@@ -134,7 +153,7 @@ export class HomeContainer extends Component {
                               size="large"
                               link
                               color="red"
-                              onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: _id })} } />
+                              onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: employee._id })} } />
                     </Table.Cell>
                 )
             }));

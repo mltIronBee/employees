@@ -19,6 +19,8 @@ export const initializeDb = () => {
         if(!user) {
             const user = new User({
                 login: 'admin',
+                firstName: 'admin',
+                lastName: 'admin',
                 password: 'admin',
                 isAdmin: true
             });
@@ -26,6 +28,16 @@ export const initializeDb = () => {
             user.save();
         }
     })
+};
+
+export const getAllUsers = (adminLogin) => {
+    return User
+        .find()
+        .populate('employees')
+        .exec()
+        .then(users => {
+            return users.filter(user => user.login !== adminLogin);
+        });
 };
 
 export const createUser = (data) => {

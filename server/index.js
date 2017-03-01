@@ -69,6 +69,19 @@ app.get('/login', (req, res) => {
         });
 });
 
+app.get('/admin', (req, res) => {
+
+    const { name: login } = auth(req);
+
+    db.getAllUsers(login)
+        .then(users => {
+            res.send(users);
+        })
+        .catch(err => {
+            res.status(400).end(err);
+        });
+});
+
 app.post('/register', uniqueLoginMiddleware, (req, res) => {
 
     db.createUser(req.body)
