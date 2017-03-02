@@ -70,16 +70,26 @@ export class HomeContainer extends Component {
     };
 
     onEmployeeDelete = (id) => {
-        //Todo: Fix bug, in admin panel employee isn't deleted from state
         http.post(`${apiPrefix}/employee/delete`, { id })
             .then(res => {
-                this.setState((prevState) => ({
-                    employees: prevState.employees.filter((employee) => employee._id !== id),
-                    isModalOpened: false
-                }));
+                if(this.state.isAdmin) {
+                    this.setState((prevState) => ({
+                        users: prevState.users.map(user => {
+                            user.employees = user.employees.filter(employee => employee._id !== id);
+                            return user;
+                        }),
+                        isModalOpened: false,
+                        employees: prevState.employees.filter((employee) => employee._id !== id)
+                    }));
+                } else {
+                    this.setState((prevState) => ({
+                        employees: prevState.employees.filter((employee) => employee._id !== id),
+                        isModalOpened: false
+                    }));
+                }
             })
             .catch(err => {
-                console.log('Deleting error');
+                console.log(err);
             })
     };
 
