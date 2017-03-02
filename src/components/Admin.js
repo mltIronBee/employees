@@ -20,7 +20,7 @@ export const Admin = (props) => (
             <Grid.Column width={5}>
                 <Segment color="blue"
                          className="custom-scroll"
-                         style={{ maxHeight: '400px', overflowY: 'scroll' }} >
+                         style={{ maxHeight: '473px', overflowY: 'scroll' }} >
                     <UserList users={ props.users }
                               onUserClick={ props.onUserClick } />
                 </Segment>
