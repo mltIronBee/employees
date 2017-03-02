@@ -191,7 +191,7 @@ export class HomeContainer extends Component {
     });
 
     paginate = (array) => {
-        const startIndex = this.state.currentPage === 0 ? 0 : this.state.currentPage * this.fieldsPerPage - 1;
+        const startIndex = this.state.currentPage === 0 ? 0 : this.state.currentPage * this.fieldsPerPage;
         const endIndex = startIndex + this.fieldsPerPage;
 
         return array.slice(startIndex, endIndex);
@@ -205,7 +205,7 @@ export class HomeContainer extends Component {
         const pageAmount = this.getPageAmount();
         const pages = [];
 
-        for(let i = 0; i <= pageAmount; i++) {
+        for(let i = 0; i < pageAmount; i++) {
             pages.push(i);
         }
 
@@ -217,7 +217,7 @@ export class HomeContainer extends Component {
     };
 
     onPaginationNext = () => {
-        if(this.state.currentPage < this.getPageAmount()) {
+        if(this.state.currentPage < this.getPageAmount() - 1) {
             this.setState(prevState => ({
                 currentPage: prevState.currentPage + 1
             }))
