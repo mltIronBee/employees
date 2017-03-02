@@ -16,7 +16,8 @@ export class HomeContainer extends Component {
         users: [],
         isAdmin: false,
         isModalOpened: false,
-        currentEmployeeId: ''
+        currentEmployeeId: '',
+        filteredUsers: []
     };
 
     fieldsPerPage = 8;
@@ -72,16 +73,26 @@ export class HomeContainer extends Component {
     };
 
     onEmployeeDelete = (id) => {
-        //Todo: Fix bug, in admin panel employee isn't deleted from state
         http.post(`${apiPrefix}/employee/delete`, { id })
             .then(res => {
-                this.setState((prevState) => ({
-                    employees: prevState.employees.filter((employee) => employee._id !== id),
-                    isModalOpened: false
-                }));
+                if(this.state.isAdmin) {
+                    this.setState((prevState) => ({
+                        users: prevState.users.map(user => {
+                            user.employees = user.employees.filter(employee => employee._id !== id);
+                            return user;
+                        }),
+                        isModalOpened: false,
+                        employees: prevState.employees.filter((employee) => employee._id !== id)
+                    }));
+                } else {
+                    this.setState((prevState) => ({
+                        employees: prevState.employees.filter((employee) => employee._id !== id),
+                        isModalOpened: false
+                    }));
+                }
             })
             .catch(err => {
-                console.log('Deleting error');
+                console.log(err);
             })
     };
 
@@ -272,12 +283,22 @@ export class HomeContainer extends Component {
         this.setState({ employees });
     };
 
+    onFilterUsers = (e, data) => {
+        const seachUser = data.value.toLowerCase();
+        const filtered = this.state.users.filter(user => `${user.firstName} ${user.lastName}`
+            .toLowerCase()
+            .includes(seachUser));
+
+        this.setState({ filteredUsers: filtered});
+    };
+
     render() {
         return this.state.isAdmin
             ? <Admin getEmployeesTableProps={ this.getEmployeesTableProps }
                      getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
-                     users={ this.state.users }
-                     onUserClick={ this.onUserClick } />
+                     users={ this.state.filteredUsers.length ? this.state.filteredUsers : this.state.users }
+                     onUserClick={ this.onUserClick }
+                     onSearchUsers={ this.onFilterUsers } />
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData } />
     }

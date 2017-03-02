@@ -8,6 +8,6 @@ export const SearchDropdown = (props) => (
               search
               selection
               options={ props.dropdownOptions }
-              placeholder="Search parameters"
+              placeholder="Searched skills"
               onChange={ props.onDropdownChange } />
 );
