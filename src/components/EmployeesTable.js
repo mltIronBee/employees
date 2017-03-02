@@ -11,6 +11,7 @@ export const EmployeesTable = (props) => (
             <Table singleLine
                    color="blue"
                    headerRow={ props.headerRow }
+                   footerRow={ props.footerRow }
                    renderBodyRow={ props.renderBodyRow }
                    tableData={ props.tableData } />
         </Grid.Column>

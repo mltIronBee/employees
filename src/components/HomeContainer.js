@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { browserHistory, Link } from 'react-router';
-import { Table, Icon } from 'semantic-ui-react';
+import { Table, Icon, Menu } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
@@ -12,11 +12,14 @@ export class HomeContainer extends Component {
     state = {
         employees: [],
         filtered: [],
+        currentPage: 0,
         users: [],
         isAdmin: false,
         isModalOpened: false,
         currentEmployeeId: ''
     };
+
+    fieldsPerPage = 8;
 
     initializeUser = () => {
         const key = localStorage.getItem('Authorization');
@@ -176,6 +179,48 @@ export class HomeContainer extends Component {
         ]
     });
 
+    paginate = (array) => {
+        const startIndex = this.state.currentPage === 0 ? 0 : this.state.currentPage * this.fieldsPerPage - 1;
+        const endIndex = startIndex + this.fieldsPerPage;
+
+        return array.slice(startIndex, endIndex);
+    };
+
+    getPageAmount = () => this.state.filtered.length
+        ? Math.ceil(this.state.filtered.length / this.fieldsPerPage)
+        : Math.ceil(this.state.employees.length / this.fieldsPerPage);
+
+    getPageArray = () => {
+        const pageAmount = this.getPageAmount();
+        const pages = [];
+
+        for(let i = 0; i <= pageAmount; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
+
+    onPaginationChange = (page) => {
+        this.setState({ currentPage: page });
+    };
+
+    onPaginationNext = () => {
+        if(this.state.currentPage < this.getPageAmount()) {
+            this.setState(prevState => ({
+                currentPage: prevState.currentPage + 1
+            }))
+        }
+    };
+
+    onPaginationPrev = () => {
+        if(this.state.currentPage !== 0) {
+            this.setState(prevState => ({
+                currentPage: prevState.currentPage - 1
+            }))
+        }
+    };
+
     getEmployeesSkillsSearchData = () => ({
         dropdownOptions: this.prepareOptions(),
         onDropdownChange: this.dropdownOnChange
@@ -183,10 +228,35 @@ export class HomeContainer extends Component {
 
     getEmployeesTableProps = () => ({
         headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions'],
+        footerRow: (
+            <Table.Row>
+                <Table.HeaderCell colSpan="6">
+                    <Menu floated="right" pagination>
+                        <Menu.Item icon onClick={ this.onPaginationPrev }>
+                            <Icon name="left chevron" />
+                        </Menu.Item>
+                        {
+                            this.getPageArray().map(pageNumber => (
+                                <Menu.Item key={ pageNumber }
+                                           active={ pageNumber === this.state.currentPage }
+                                           onClick={() => {
+                                               this.onPaginationChange(pageNumber);
+                                           }}>
+                                    { pageNumber + 1 }
+                                </Menu.Item>
+                            ))
+                        }
+                        <Menu.Item icon onClick={ this.onPaginationNext }>
+                            <Icon name="right chevron" />
+                        </Menu.Item >
+                    </Menu>
+                </Table.HeaderCell>
+            </Table.Row>
+        ),
         renderBodyRow: this.renderEmployeesTable,
         tableData: this.state.filtered.length
-            ? this.prepareEmployeesTableData(this.state.filtered)
-            : this.prepareEmployeesTableData(this.state.employees),
+            ? this.prepareEmployeesTableData(this.paginate(this.state.filtered))
+            : this.prepareEmployeesTableData(this.paginate(this.state.employees)),
         onEmployeeDelete: () => { this.onEmployeeDelete(this.state.currentEmployeeId) },
         onModalClose: () => { this.setState({ isModalOpened: false }) },
         isModalOpened: this.state.isModalOpened
