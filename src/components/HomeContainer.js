@@ -15,7 +15,8 @@ export class HomeContainer extends Component {
         users: [],
         isAdmin: false,
         isModalOpened: false,
-        currentEmployeeId: ''
+        currentEmployeeId: '',
+        filteredUsers: []
     };
 
     initializeUser = () => {
@@ -202,12 +203,22 @@ export class HomeContainer extends Component {
         this.setState({ employees });
     };
 
+    onFilterUsers = (e, data) => {
+        const seachUser = data.value.toLowerCase();
+        const filtered = this.state.users.filter(user => `${user.firstName} ${user.lastName}`
+            .toLowerCase()
+            .includes(seachUser));
+
+        this.setState({ filteredUsers: filtered});
+    };
+
     render() {
         return this.state.isAdmin
             ? <Admin getEmployeesTableProps={ this.getEmployeesTableProps }
                      getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
-                     users={ this.state.users }
-                     onUserClick={ this.onUserClick } />
+                     users={ this.state.filteredUsers.length ? this.state.filteredUsers : this.state.users }
+                     onUserClick={ this.onUserClick }
+                     onSearchUsers={ this.onFilterUsers } />
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData } />
     }
