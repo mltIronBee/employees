@@ -172,7 +172,7 @@ export class Profile extends Component {
             if (!this.state.newSkill && !this.state.skillSearch) {
                 this.notification.show('Skill must be required!', 'danger');
             } else {
-                let skillToSave = this.state.skillSearch || this.state.newSkill;
+                let skillToSave = this.state.newSkill || this.state.skillSearch;
 
                 if(this.state.skills.includes(skillToSave)) {
                     this.notification.show('Skill already exist!', 'danger');
