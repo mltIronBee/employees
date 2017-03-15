@@ -174,14 +174,18 @@ export class Profile extends Component {
             } else {
                 let skillToSave = this.state.newSkill || this.state.skillSearch;
 
-                this.setState(prevState => ({
-                    skills: [...prevState.skills, skillToSave],
-                    preparedSkills: !prevState.preparedSkills.includes(skillToSave)
-                        ? [...prevState.preparedSkills, skillToSave]
-                        : prevState.preparedSkills,
-                    skillSearch: '',
-                    newSkill: ''
-                }));
+                if(this.state.skills.includes(skillToSave)) {
+                    this.notification.show('Skill already exist!', 'danger');
+                } else {
+                    this.setState(prevState => ({
+                        skills: [...prevState.skills, skillToSave],
+                        preparedSkills: !prevState.preparedSkills.includes(skillToSave)
+                            ? [...prevState.preparedSkills, skillToSave]
+                            : prevState.preparedSkills,
+                        skillSearch: '',
+                        newSkill: ''
+                    }));
+                }
             }
         }
     };
@@ -313,9 +317,8 @@ export class Profile extends Component {
                                                               id="newSkills"
                                                               placeholder="Skill"
                                                               options={ this.prepareOptions(this.state.preparedSkills) }
-                                                              value={ this.state.newSkill }
                                                               onChange={ (e, { value }) => { this.setState({ newSkill: value }) }}
-                                                              onSearchChange={ (e, value) => { this.setState({ skillSearch: value }) } }
+                                                              onSearchChange={ (e, value) => { this.setState({ skillSearch: value, newSkill: '' }) } }
                                                               onKeyDown={ this.onAddNewSkillItem } />
                                                 </Table.Cell>
                                                 <Table.Cell>
