@@ -174,18 +174,14 @@ export class Profile extends Component {
             } else {
                 let skillToSave = this.state.newSkill || this.state.skillSearch;
 
-                if(this.state.skills.includes(skillToSave)) {
-                    this.notification.show('Skill already exist!', 'danger');
-                } else {
-                    this.setState(prevState => ({
-                        skills: [...prevState.skills, skillToSave],
-                        preparedSkills: !prevState.preparedSkills.includes(skillToSave)
-                            ? [...prevState.preparedSkills, skillToSave]
-                            : prevState.preparedSkills,
-                        skillSearch: '',
-                        newSkill: ''
-                    }));
-                }
+                this.setState(prevState => ({
+                    skills: [...prevState.skills, skillToSave],
+                    preparedSkills: !prevState.preparedSkills.includes(skillToSave)
+                        ? [...prevState.preparedSkills, skillToSave]
+                        : prevState.preparedSkills,
+                    skillSearch: '',
+                    newSkill: ''
+                }));
             }
         }
     };
