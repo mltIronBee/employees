@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import random from 'randomstring';
@@ -53,7 +54,15 @@ const uniqueLoginMiddleware = (req, res, next) => {
 // RESTful API
 app.use(express.static('build'));
 
-app.get('/login', (req, res) => {
+const apiRoutes = express.Router();
+
+app.use('/api', apiRoutes);
+
+app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
+});
+
+apiRoutes.get('/login', (req, res) => {
     const { name, pass } = auth(req);
 
     db.findByLogin(name)
@@ -69,7 +78,7 @@ app.get('/login', (req, res) => {
         });
 });
 
-app.get('/admin', (req, res) => {
+apiRoutes.get('/admin', (req, res) => {
 
     const { name: login } = auth(req);
 
@@ -82,7 +91,7 @@ app.get('/admin', (req, res) => {
         });
 });
 
-app.post('/register', uniqueLoginMiddleware, (req, res) => {
+apiRoutes.post('/register', uniqueLoginMiddleware, (req, res) => {
 
     db.createUser(req.body)
         .then(result => {
@@ -93,7 +102,7 @@ app.post('/register', uniqueLoginMiddleware, (req, res) => {
         })
 });
 
-app.post('/employee/create', multerMiddleware, (req, res) => {
+apiRoutes.post('/employee/create', multerMiddleware, (req, res) => {
 
     const { body: employeeData } = req;
     const { name: login } = auth(req);
@@ -111,7 +120,7 @@ app.post('/employee/create', multerMiddleware, (req, res) => {
         });
 });
 
-app.get('/employee/create', (req, res) => {
+apiRoutes.get('/employee/create', (req, res) => {
 
     db.getSkillsAndPositions()
         .then(([skills, positions]) => {
@@ -125,7 +134,7 @@ app.get('/employee/create', (req, res) => {
         })
 });
 
-app.get('/employee', (req, res) => {
+apiRoutes.get('/employee', (req, res) => {
 
     db.getEmployeeById(req.query._id)
         .then(([employee, skills, positions]) => {
@@ -140,7 +149,7 @@ app.get('/employee', (req, res) => {
         });
 });
 
-app.get('/employees', (req, res) => {
+apiRoutes.get('/employees', (req, res) => {
 
     const { name: login } = auth(req);
 
@@ -153,7 +162,7 @@ app.get('/employees', (req, res) => {
         });
 });
 
-app.post('/employee/update', multerMiddleware, (req, res) => {
+apiRoutes.post('/employee/update', multerMiddleware, (req, res) => {
 
     const { body: userData } = req;
 
@@ -172,7 +181,7 @@ app.post('/employee/update', multerMiddleware, (req, res) => {
         })
 });
 
-app.post('/employee/delete', (req, res) => {
+apiRoutes.post('/employee/delete', (req, res) => {
 
     db.deleteEmployee(req.body.id)
        .then(result => {

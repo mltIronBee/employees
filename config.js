@@ -1,5 +1,5 @@
 module.exports = {
-  apiPrefix: 'http://localhost:8080',
+  apiPrefix: 'http://localhost:8080/api',
   serverPort: 8080,
   dbConfig: {
     name: 'test',
