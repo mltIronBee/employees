@@ -17,10 +17,9 @@ export class HomeContainer extends Component {
         isAdmin: false,
         isModalOpened: false,
         currentEmployeeId: '',
-        filteredUsers: []
+        filteredUsers: [],
+        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 8
     };
-
-    fieldsPerPage = 8;
 
     initializeUser = () => {
         const key = localStorage.getItem('Authorization');
@@ -191,15 +190,15 @@ export class HomeContainer extends Component {
     });
 
     paginate = (array) => {
-        const startIndex = this.state.currentPage === 0 ? 0 : this.state.currentPage * this.fieldsPerPage;
-        const endIndex = startIndex + this.fieldsPerPage;
+        const startIndex = this.state.currentPage === 0 ? 0 : this.state.currentPage * this.state.fieldsPerPage;
+        const endIndex = startIndex + this.state.fieldsPerPage;
 
         return array.slice(startIndex, endIndex);
     };
 
     getPageAmount = () => this.state.filtered.length
-        ? Math.ceil(this.state.filtered.length / this.fieldsPerPage)
-        : Math.ceil(this.state.employees.length / this.fieldsPerPage);
+        ? Math.ceil(this.state.filtered.length / this.state.fieldsPerPage)
+        : Math.ceil(this.state.employees.length / this.state.fieldsPerPage);
 
     getPageArray = () => {
         const pageAmount = this.getPageAmount();
@@ -232,6 +231,25 @@ export class HomeContainer extends Component {
         }
     };
 
+    increaseFieldsPerPage = () => {
+        this.setState(prevState => {
+            localStorage.setItem('fieldsPerPage', prevState.fieldsPerPage + 1);
+            return {
+                fieldsPerPage: prevState.fieldsPerPage + 1
+            }
+        });
+    };
+
+    decreaseFieldsPerPage = () => {
+        if (this.state.fieldsPerPage < 6) return;
+        this.setState(prevState => {
+            localStorage.setItem('fieldsPerPage', prevState.fieldsPerPage - 1);
+            return {
+                fieldsPerPage: prevState.fieldsPerPage - 1
+            }
+        });
+    };
+
     getEmployeesSkillsSearchData = () => ({
         dropdownOptions: this.prepareOptions(),
         onDropdownChange: this.dropdownOnChange
@@ -242,6 +260,17 @@ export class HomeContainer extends Component {
         footerRow: (
             <Table.Row>
                 <Table.HeaderCell colSpan="6">
+                    <Menu floated="left" pagination>
+                        <Menu.Item icon onClick={ this.decreaseFieldsPerPage }>
+                            <Icon name="minus" />
+                        </Menu.Item>
+                        <Menu.Item>
+                            { this.state.fieldsPerPage }
+                        </Menu.Item>
+                        <Menu.Item icon onClick={ this.increaseFieldsPerPage }>
+                            <Icon name="plus" />
+                        </Menu.Item>
+                    </Menu>
                     <Menu floated="right" pagination>
                         <Menu.Item icon onClick={ this.onPaginationPrev }>
                             <Icon name="left chevron" />
