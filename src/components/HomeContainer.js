@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { browserHistory, Link } from 'react-router';
-import { Table, Icon, Menu } from 'semantic-ui-react';
+import { Table, Icon, Menu, Dropdown } from 'semantic-ui-react';
 import http, { setAuthHeader } from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
@@ -18,8 +18,43 @@ export class HomeContainer extends Component {
         isModalOpened: false,
         currentEmployeeId: '',
         filteredUsers: [],
-        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 8
+        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
     };
+
+    dropdownOptions = [
+        {
+            text: '5',
+            value: 5
+        },
+        {
+            text: '10',
+            value: 10
+        },
+        {
+            text: '15',
+            value: 15
+        },
+        {
+            text: '20',
+            value: 20
+        },
+        {
+            text: '25',
+            value: 25
+        },
+        {
+            text: '30',
+            value: 30
+        },
+        {
+            text: '40',
+            value: 40
+        },
+        {
+            text: '50',
+            value: 50
+        }
+    ];
 
     initializeUser = () => {
         const key = localStorage.getItem('Authorization');
@@ -231,21 +266,11 @@ export class HomeContainer extends Component {
         }
     };
 
-    increaseFieldsPerPage = () => {
+    onPaginationNumberChange = (e, { value }) => {
         this.setState(prevState => {
-            localStorage.setItem('fieldsPerPage', prevState.fieldsPerPage + 1);
+            localStorage.setItem('fieldsPerPage', value);
             return {
-                fieldsPerPage: prevState.fieldsPerPage + 1
-            }
-        });
-    };
-
-    decreaseFieldsPerPage = () => {
-        if (this.state.fieldsPerPage < 6) return;
-        this.setState(prevState => {
-            localStorage.setItem('fieldsPerPage', prevState.fieldsPerPage - 1);
-            return {
-                fieldsPerPage: prevState.fieldsPerPage - 1
+                fieldsPerPage: value
             }
         });
     };
@@ -260,17 +285,11 @@ export class HomeContainer extends Component {
         footerRow: (
             <Table.Row>
                 <Table.HeaderCell colSpan="6">
-                    <Menu floated="left" pagination>
-                        <Menu.Item icon onClick={ this.decreaseFieldsPerPage }>
-                            <Icon name="minus" />
-                        </Menu.Item>
-                        <Menu.Item>
-                            { this.state.fieldsPerPage }
-                        </Menu.Item>
-                        <Menu.Item icon onClick={ this.increaseFieldsPerPage }>
-                            <Icon name="plus" />
-                        </Menu.Item>
-                    </Menu>
+                    <Dropdown placeholder="Per page"
+                              selection
+                              value={ this.state.fieldsPerPage }
+                              options={this.dropdownOptions}
+                              onChange={ this.onPaginationNumberChange }/>
                     <Menu floated="right" pagination>
                         <Menu.Item icon onClick={ this.onPaginationPrev }>
                             <Icon name="left chevron" />
