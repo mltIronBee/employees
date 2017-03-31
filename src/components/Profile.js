@@ -75,11 +75,10 @@ export class Profile extends Component {
         this.setState({readOnly: false});
     };
 
-    deleteSkill = (e) => {
-        const skills = this.state.skills;
-        const index = skills.indexOf(e.target.value);
-        skills.splice(index, 1);
-        this.setState({skills: skills});
+    deleteSkill = (skillValue) => {
+        this.setState(prevState => ({
+            skills: prevState.skills.filter(skill => skill !== skillValue)
+        }));
     };
 
     saveData = (e) => {
@@ -294,7 +293,9 @@ export class Profile extends Component {
                                                                     <Icon name="delete"
                                                                           color="blue"
                                                                           link
-                                                                          onClick={this.deleteSkill} />
+                                                                          onClick={() => {
+                                                                              this.deleteSkill(skill)
+                                                                          }} />
                                                                 </Table.Cell>
                                                             )
                                                         }
