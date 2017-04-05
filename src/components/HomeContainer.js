@@ -181,22 +181,20 @@ export class HomeContainer extends Component {
             return array.map((employee, index) => ({
                 index: index + 1,
                 firstName: employee.firstName,
-                lastName: (
-                    <UserPopup user={ employee }
-                               key={ index + 2 }
-                               trigger={
-                                   <Table.Cell>{ employee.lastName }</Table.Cell>
-                               } />
-                ),
+                lastName: employee.lastName,
                 position: employee.position,
                 startedAt: employee.startedAt,
                 actions: (
                     <Table.Cell key={ index + 3 }>
-                        <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
-                            <Icon name="search"
-                                  size="large"
-                                  link color="blue" />
-                        </Link>
+                        <UserPopup user={ employee }
+                                   key={ index + 2 }
+                                   trigger={
+                                       <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
+                                           <Icon name="search"
+                                                 size="large"
+                                                 link color="blue" />
+                                       </Link>
+                                   } />
                         <Icon name="delete"
                               size="large"
                               link
@@ -267,12 +265,10 @@ export class HomeContainer extends Component {
     };
 
     onPaginationNumberChange = (e, { value }) => {
-        this.setState(prevState => {
-            localStorage.setItem('fieldsPerPage', value);
-            return {
-                fieldsPerPage: value
-            }
-        });
+        localStorage.setItem('fieldsPerPage', value);
+        this.setState(prevState => ({
+            fieldsPerPage: value
+        }));
     };
 
     getEmployeesSkillsSearchData = () => ({
