@@ -80,3 +80,29 @@ header i {
   opacity: 1;
   transform: translateX(0);
 }
+
+.empty-project {
+  color: #b40100;
+}
+
+.ready-for-transition {
+  color: #e66000;
+}
+
+.ready-for-transition-checkbox {
+  font-size: .9em;
+  font-weight: 600;
+}
+
+.projects-dropdown {
+  padding: 10px 15px;
+  color: rgba(0,0,0,.87);
+  box-shadow: none;
+  border-radius: 3px;
+  border: 1px solid rgba(34,36,38,.15);
+  cursor: pointer;
+  word-wrap: break-word;
+  line-height: 1em;
+  white-space: normal;
+  outline: 0;
+}

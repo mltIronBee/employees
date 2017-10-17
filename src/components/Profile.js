@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config';
-import { Grid, Form, Button, Icon, Table, Segment, Image, Dropdown } from 'semantic-ui-react';
+import { Grid, Form, Button, Icon, Table, Segment, Image, Dropdown, Checkbox } from 'semantic-ui-react';
 import { Notification } from './Notification';
 
 export class Profile extends Component {
@@ -13,6 +13,9 @@ export class Profile extends Component {
         firstName: '',
         lastName: '',
         position: '',
+        project: '',
+        projects: [],
+        prevProject: '',
         startedAt: '',
         skills: [],
         readOnly: true,
@@ -21,29 +24,31 @@ export class Profile extends Component {
         message: '',
         preparedPositions: [],
         preparedSkills: [],
+        preparedProjects: [],
         positionSearch: '',
+        projectSearch: '',
         skillSearch: '',
-        newSkill: ''
+        newSkill: '',
+        readyForTransition: false
     };
 
     uploadedImage = null;
 
     componentDidMount() {
 
-        if(this.props.params.method === 'create') {
+        if (this.props.params.method === 'create') {
 
             http.get(`${apiPrefix}/employee/create`)
-                .then(({data : { skills, positions }}) => {
+                .then(({data : { skills, positions, projects }}) => {
                     this.setState({
                         preparedSkills: skills ? skills : [],
                         preparedPositions: positions ? positions : [],
+                        preparedProjects: projects ? projects : [],
                         isCreating: true,
                         readOnly: false
                     });
                 })
-                .catch(err => {
-                    console.log(err);
-                });
+                .catch(console.log);
 
         } else {
             http.get(`${apiPrefix}/employee`, {
@@ -51,23 +56,28 @@ export class Profile extends Component {
                     _id: this.props.location.query.id
                 }
             })
-                .then(({ data: { employee, skills, positions } }) => {
+                .then(({ data: { employee, skills, positions, projects } }) => {
 
                     this.setState(prevState => ({
                         _id: employee._id,
                         firstName: employee.firstName,
                         lastName: employee.lastName,
                         position: employee.position,
+                        project: employee.project,
                         startedAt: new Date(employee.startedAt).toISOString().split('T')[0],
                         skills: employee.skills,
                         imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
                         preparedPositions: positions,
-                        preparedSkills: skills
+                        preparedSkills: skills,
+                        preparedProjects: projects,
+                        prevProject: employee.project,
+                        projects: employee.projects,
+                        readyForTransition: employee.readyForTransition
                     }));
+
+                    this.checkProjectsArray();
                 })
-                .catch(err => {
-                    console.log(err);
-                });
+                .catch(console.log);
         }
     }
 
@@ -84,26 +94,27 @@ export class Profile extends Component {
     saveData = (e) => {
 
         e.preventDefault();
-
-        let { _id, firstName, lastName, position, startedAt, skills, isCreating } = this.state;
+        let { _id, firstName, lastName, position, project, startedAt, skills, isCreating, readyForTransition } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
         if(!firstName) return this.notification.show('First name must be required!', 'danger');
         if(!lastName) return this.notification.show('Last name must be required!', 'danger');
         if(!position) return this.notification.show('Position must be required!', 'danger');
         if(!startedAt) return this.notification.show('Start date must be required!', 'danger');
+        this.onAddNewProjectToArray();
 
         const data = new FormData();
 
         data.append('firstName', firstName);
         data.append('lastName', lastName);
         data.append('position', position);
+        data.append('project', project);
         data.append('startedAt', startedAt);
+        data.append('readyForTransition', readyForTransition);
         data.append('image', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
         // Todo: fix code below
-        skills.forEach(skill => {
-            data.append('skills[]', skill);
-        });
+        skills.forEach(skill => data.append('skills[]', skill));
+        this.state.projects.forEach(project => data.append('projects[]', project));
 
         if(!isCreating) {
             data.append('_id', _id);
@@ -125,7 +136,6 @@ export class Profile extends Component {
 
     onUpload = (e) => {
         this.uploadedImage = e.target.files[0];
-
         this.imagePreview();
     };
 
@@ -134,10 +144,7 @@ export class Profile extends Component {
         const reader = new FileReader();
 
         reader.onload = () => {
-
-            this.setState({
-                imageSrc: reader.result
-            });
+            this.setState({ imageSrc: reader.result });
         };
 
         reader.readAsDataURL(this.uploadedImage);
@@ -159,6 +166,23 @@ export class Profile extends Component {
                     preparedPositions: [
                         ...prevState.preparedPositions,
                         prevState.positionSearch
+                    ]
+                }));
+            }
+        }
+    };
+
+    onAddNewProjectItem = e => {
+        if(e.which === 13) {
+            if(this.state.preparedProjects.includes(this.state.projectSearch)) {
+                this.notification.show('This project already exists!', 'danger');
+            } else if(!this.state.projectSearch) {
+                this.notification.show('Project must be required!', 'danger');
+            } else {
+                this.setState(prevState => ({
+                    preparedProjects: [
+                        ...prevState.preparedProjects,
+                        prevState.projectSearch
                     ]
                 }));
             }
@@ -187,6 +211,27 @@ export class Profile extends Component {
                 }
             }
         }
+    };
+
+    onChangeReadyForTransition = e => {
+        if (e.which === 13 || e.type === 'click') {
+            e.preventDefault();
+            this.setState(prevState => ({ readyForTransition: !prevState.readyForTransition }))
+        }
+    };
+
+    onAddNewProjectToArray = () => {
+        if (this.state.prevProject !== this.state.project && this.state.project !== '')
+            this.setState(prevState => ({
+                projects: !prevState.projects.includes(this.state.project)
+                    ? [...prevState.projects, this.state.project]
+                    : prevState.projects
+            }));
+    };
+
+    checkProjectsArray = () => {
+        if (!this.state.projects.length && this.state.project !== '')
+            this.setState(prevState => ({ projects: [this.state.project] }))
     };
 
     render() {
@@ -265,6 +310,37 @@ export class Profile extends Component {
                                           onChange={ (e, data) => { this.setState({ position: data.value }) }}
                                           onSearchChange={ (e, value) => { this.setState({ positionSearch: value }) } }
                                           onKeyDown={ this.onAddNewPositionItem } />
+                            </Form.Field>
+                            <Form.Field>
+                                <label>Project</label>
+                                <Dropdown fluid
+                                          search
+                                          selection
+                                          placeholder="Project"
+                                          disabled={ this.state.readOnly }
+                                          value={ this.state.project }
+                                          options={ this.prepareOptions(this.state.preparedProjects)}
+                                          onChange={ (e, data) => { this.setState({ project: data.value }) }}
+                                          onSearchChange={ (e, value) => { this.setState({ projectSearch: value }) } }
+                                          onKeyDown={ this.onAddNewProjectItem } />
+                            </Form.Field>
+                            <Form.Field>
+                                <label>Projects</label>
+                                <Dropdown fluid
+                                          className='projects-dropdown'
+                                          placeholder="Projects"
+                                          scrolling
+                                          floating
+                                          disabled={this.state.readOnly}
+                                          options={ this.prepareOptions(this.state.projects)}/>
+                            </Form.Field>
+                            <Form.Field>
+                                <Checkbox className='ready-for-transition-checkbox'
+                                          label='ready for transition on another project'
+                                          disabled={ this.state.readOnly }
+                                          checked={ this.state.readyForTransition }
+                                          onChange={ this.onChangeReadyForTransition }
+                                />
                             </Form.Field>
                             <Form.Field>
                                 <label>Started at</label>

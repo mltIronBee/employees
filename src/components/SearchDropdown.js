@@ -7,6 +7,7 @@ export const SearchDropdown = (props) => (
               multiple
               search
               selection
+              scrolling
               options={ props.dropdownOptions }
               placeholder="Searched skills"
               onChange={ props.onDropdownChange } />

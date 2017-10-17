@@ -27,6 +27,10 @@ export const UserPopup = ({ user, trigger }) => (
                         <List.Content>{ user.position }</List.Content>
                     </List.Item>
                     <List.Item>
+                        <List.Icon name="industry"/>
+                        <List.Content>{ user.project }</List.Content>
+                    </List.Item>
+                    <List.Item>
                         <List.Icon name="calendar"/>
                         <List.Content>{ user.startedAt }</List.Content>
                     </List.Item>

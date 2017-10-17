@@ -29,6 +29,18 @@ const EmployeeSchema = new Schema({
 
     imageUrl: {
         type: String
+    },
+
+    project: {
+        type: String
+    },
+
+    readyForTransition: {
+        type: Boolean
+    },
+
+    projects: {
+        type: Array
     }
 });
 

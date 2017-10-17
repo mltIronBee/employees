@@ -9,7 +9,7 @@ export const setUpConnection = () => {
   mongoose.connect(`mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
 };
 
-export const findByLogin = (login) => {
+export const findByLogin = login => {
     return User.findOne({ login });
 };
 
@@ -30,7 +30,7 @@ export const initializeDb = () => {
     })
 };
 
-export const getAllUsers = (adminLogin) => {
+export const getAllUsers = adminLogin => {
     return User
         .find()
         .populate('employees')
@@ -59,42 +59,41 @@ export const createEmployee = (data, login) => {
         });
 };
 
-export const getAllEmployees = (login) => {
+export const getAllEmployees = login => {
     return findByLogin(login)
         .populate('employees')
-        .then(user => {
-            return user.employees
-        })
+        .then(user => user.employees)
 };
 
-export const getSkillsAndPositions = () => {
+export const getSkillsPositionsProjects = () => {
     return Employee.find()
-        .select('skills position')
+        .select('skills position project')
         .exec()
         .then(result => {
-            let preparedSkills = [],
-                preparedPositions = [];
+            let preparedSkills = [], preparedPositions = [], preparedProjects = [];
 
             const uniqueFilter = (item, index, self) => self.indexOf(item) === index;
 
             result.forEach(item => {
                 preparedSkills = [...preparedSkills, ...item.skills];
-                preparedPositions.push(item.position)
+                preparedPositions.push(item.position);
+                preparedProjects.push(item.project);
             });
 
             preparedSkills = preparedSkills.filter(uniqueFilter);
             preparedPositions = preparedPositions.filter(uniqueFilter);
+            preparedProjects = preparedProjects.filter(uniqueFilter);
 
-            return [preparedSkills, preparedPositions];
+            return [preparedSkills, preparedPositions, preparedProjects];
         });
 };
 
 export const getEmployeeById = (_id) => {
-    return getSkillsAndPositions()
-        .then(([skills, positions]) => {
+    return getSkillsPositionsProjects()
+        .then(([ skills, positions, projects ]) => {
             const employeePromise = Employee.findById(_id);
 
-            return Promise.all([employeePromise, skills, positions]);
+            return Promise.all([employeePromise, skills, positions, projects]);
         });
 };
 

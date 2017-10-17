@@ -122,31 +122,16 @@ apiRoutes.post('/employee/create', multerMiddleware, (req, res) => {
 
 apiRoutes.get('/employee/create', (req, res) => {
 
-    db.getSkillsAndPositions()
-        .then(([skills, positions]) => {
-            res.send({
-                skills,
-                positions
-            })
-        })
-        .catch((err) => {
-            res.status(400).send(err);
-        })
+    db.getSkillsPositionsProjects()
+        .then(([skills, positions, projects]) => res.send({ skills, positions, projects }))
+        .catch(err => res.status(400).send(err))
 });
 
 apiRoutes.get('/employee', (req, res) => {
 
     db.getEmployeeById(req.query._id)
-        .then(([employee, skills, positions]) => {
-            res.send({
-                employee,
-                skills,
-                positions
-            });
-        })
-        .catch(err => {
-            res.status(400).send(err);
-        });
+        .then(([employee, skills, positions, projects]) => res.send({ employee, skills, positions, projects}))
+        .catch(err => res.status(400).send(err));
 });
 
 apiRoutes.get('/employees', (req, res) => {

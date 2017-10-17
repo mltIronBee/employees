@@ -125,9 +125,7 @@ export class HomeContainer extends Component {
                     }));
                 }
             })
-            .catch(err => {
-                console.log(err);
-            })
+            .catch(console.log)
     };
 
     formatEmployeesDate = (employees) => employees.map(employee => {
@@ -142,9 +140,7 @@ export class HomeContainer extends Component {
         const options = [];
 
         this.state.employees.forEach(employee => {
-
             employee.skills.forEach(skill => {
-
                 if(!this.hasItem(options, skill)) {
                     options.push({
                         text: skill,
@@ -176,12 +172,22 @@ export class HomeContainer extends Component {
         this.setState({ filtered })
     };
 
+    getClassName = employee => {
+        return !employee.project
+            ? 'empty-project'
+            : employee.readyForTransition
+                ? 'ready-for-transition'
+                : '';
+    };
+
     prepareEmployeesTableData = (array) => {
         if(array.length) {
             return array.map((employee, index) => ({
+                className: this.getClassName(employee),
                 index: index + 1,
                 firstName: employee.firstName,
                 lastName: employee.lastName,
+                project: employee.project,
                 position: employee.position,
                 startedAt: employee.startedAt,
                 actions: (
@@ -210,13 +216,15 @@ export class HomeContainer extends Component {
         }
     };
 
-    renderEmployeesTable = ({ index, firstName, lastName, position, startedAt, actions }) => ({
+    renderEmployeesTable = ({ className, index, firstName, lastName, position, project, startedAt, actions }) => ({
         key: index,
+        className,
         cells: [
             index,
             firstName,
             lastName,
             position,
+            project,
             startedAt,
             actions
         ]
@@ -277,14 +285,14 @@ export class HomeContainer extends Component {
     });
 
     getEmployeesTableProps = () => ({
-        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Started At', 'Actions'],
+        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Project', 'Started At', 'Actions'],
         footerRow: (
             <Table.Row>
                 <Table.HeaderCell colSpan="6">
                     <Dropdown placeholder="Per page"
                               selection
                               value={ this.state.fieldsPerPage }
-                              options={this.dropdownOptions}
+                              options={ this.dropdownOptions }
                               onChange={ this.onPaginationNumberChange }/>
                     <Menu floated="right" pagination>
                         <Menu.Item icon onClick={ this.onPaginationPrev }>
