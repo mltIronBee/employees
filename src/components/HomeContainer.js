@@ -18,6 +18,10 @@ export class HomeContainer extends Component {
         isModalOpened: false,
         currentEmployeeId: '',
         filteredUsers: [],
+        firstName: '',
+        lastName: '',
+        project: '',
+        skills: [],
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
     };
 
@@ -116,11 +120,11 @@ export class HomeContainer extends Component {
                             return user;
                         }),
                         isModalOpened: false,
-                        employees: prevState.employees.filter((employee) => employee._id !== id)
+                        employees: prevState.employees.filter(employee => employee._id !== id)
                     }));
                 } else {
-                    this.setState((prevState) => ({
-                        employees: prevState.employees.filter((employee) => employee._id !== id),
+                    this.setState(prevState => ({
+                        employees: prevState.employees.filter(employee => employee._id !== id),
                         isModalOpened: false
                     }));
                 }
@@ -136,16 +140,18 @@ export class HomeContainer extends Component {
 
     hasItem = (array, searchItem) => array.some(item => item['value'] === searchItem);
 
-    prepareOptions = () => {
+    prepareOptionsSkills = () => {
         const options = [];
-
+        let key = 0;
         this.state.employees.forEach(employee => {
             employee.skills.forEach(skill => {
                 if(!this.hasItem(options, skill)) {
                     options.push({
                         text: skill,
-                        value: skill
-                    })
+                        value: skill,
+                        key
+                    });
+                    key++
                 }
             });
         });
@@ -153,23 +159,67 @@ export class HomeContainer extends Component {
         return options;
     };
 
-    dropdownOnChange = (e, data) => {
-        this.filterTable(data.value);
+    prepareOptionsForSearch = key => {
+        const options = [{
+            text: 'selected none',
+            value: '',
+            key: 0
+        }];
+
+        let index = 1;
+        this.state.employees.forEach(employee => {
+            if (!this.hasItem(options, employee[key]) && employee[key] !== '') options.push({
+                text: employee[key],
+                value: employee[key],
+                key: index
+            });
+            index++
+        });
+
+        return options
     };
 
-    filterTable = (values) => {
-        let filtered = values.length
-            ? this.state.employees
-                .map(employee => ({
-                    matches: employee.skills.filter(skill => values.includes(skill)).length,
-                    employee
-                }))
-                .sort((a, b) => b.matches - a.matches)
-                .filter(item => item.matches)
-                .map(item => item.employee)
-            : this.state.employees;
+    dropdownOnChange = (e, data) => {
+        this.setChangedState(data);
+    };
+
+    setChangedState = ({ dataKey, value }) => {
+        this.setState({ [dataKey]: value }, this.filterTable)
+    };
+
+    // filterTable = values => {
+    //     let filtered = values.length
+    //         ? this.state.employees
+    //             .map(employee => ({
+    //                 matches: employee.skills.filter(skill => values.includes(skill)).length,
+    //                 employee
+    //             }))
+    //             .sort((a, b) => b.matches - a.matches)
+    //             .filter(item => item.matches)
+    //             .map(item => item.employee)
+    //         : this.state.employees;
+    //
+    //     this.setState({ filtered })
+    // };
+
+    filterTable = () => {
+        const filtered = this.state.employees
+            .filter(employee => this.filterSkills(employee)
+                && this.filtredByAnotherCriteria('project', employee)
+                && this.filtredByAnotherCriteria('firstName', employee)
+                && this.filtredByAnotherCriteria('lastName', employee));
 
         this.setState({ filtered })
+    };
+
+    filterSkills = employee => {
+        return !this.state.skills.find(skill => !employee.skills.includes(skill));
+    };
+
+    filtredByAnotherCriteria = (criteria, employee) => {
+        return this.state[criteria] !== ''
+            ? employee[criteria] === this.state[criteria]
+            : true
     };
 
     getClassName = employee => {
@@ -280,7 +330,7 @@ export class HomeContainer extends Component {
     };
 
     getEmployeesSkillsSearchData = () => ({
-        dropdownOptions: this.prepareOptions(),
+        dropdownOptions: this.prepareOptionsSkills(),
         onDropdownChange: this.dropdownOnChange
     });
 
@@ -350,8 +400,13 @@ export class HomeContainer extends Component {
                      getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                      users={ this.state.filteredUsers.length ? this.state.filteredUsers : this.state.users }
                      onUserClick={ this.onUserClick }
-                     onSearchUsers={ this.onFilterUsers } />
+                     onSearchUsers={ this.onFilterUsers }
+                     dropdownOnChange={ this.dropdownOnChange }
+                     prepareOptionsForSearch={ this.prepareOptionsForSearch }/>
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
-                    getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData } />
+                    getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
+                    prepareOptionsForSearch={ this.prepareOptionsForSearch }
+                    dropdownOnChange={ this.dropdownOnChange }
+            />
     }
 }

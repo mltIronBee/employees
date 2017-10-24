@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Segment, Input } from 'semantic-ui-react';
+import { Grid, Segment, Input, Dropdown } from 'semantic-ui-react';
 import { EmployeesTable } from './EmployeesTable';
 import { SearchDropdown } from './SearchDropdown';
 import { UserList } from './UserList';
@@ -7,12 +7,42 @@ import { UserList } from './UserList';
 export const Admin = (props) => (
     <Grid container>
         <Grid.Row style={{ marginTop: '50px' }}>
-            <Grid.Column width={5} floated="left">
+            <Grid.Column width={5} floated="left" style={{ marginRight: '15px' }}>
                 <Input icon={{name: 'search'}}
                        placeholder='Search...'
                        onChange={ props.onSearchUsers } />
             </Grid.Column>
-            <Grid.Column width={8} floated="right">
+            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
+                <Dropdown fluid
+                          search
+                          dataKey='firstName'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('firstName') }
+                          placeholder='Searched first name'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
+                <Dropdown fluid
+                          search
+                          dataKey='lastName'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('lastName') }
+                          placeholder='Searched last name'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
+                <Dropdown fluid
+                          search
+                          dataKey='project'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('project') }
+                          placeholder='Searched project'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={3} floated="right" style={{ padding: 0 }}>
                 <SearchDropdown { ...props.getEmployeesSkillsSearchData() } />
             </Grid.Column>
         </Grid.Row>

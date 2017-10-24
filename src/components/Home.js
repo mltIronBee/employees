@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Grid, Button } from 'semantic-ui-react';
+import { Grid, Button, Dropdown } from 'semantic-ui-react';
 import { EmployeesTable } from './EmployeesTable';
 import { SearchDropdown } from './SearchDropdown';
 
@@ -16,7 +16,37 @@ export const Home = (props) => (
             </Grid.Column>
         </Grid.Row>
         <Grid.Row>
-            <Grid.Column width={8} floated="right">
+            <Grid.Column width={3} floated="right">
+                <Dropdown fluid
+                          search
+                          dataKey='firstName'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('firstName') }
+                          placeholder='Searched first name'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={3} floated="right">
+                <Dropdown fluid
+                          search
+                          dataKey='lastName'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('lastName') }
+                          placeholder='Searched last name'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={3} floated="right">
+                <Dropdown fluid
+                          search
+                          dataKey='project'
+                          selection
+                          scrolling
+                          options={ props.prepareOptionsForSearch('project') }
+                          placeholder='Searched project'
+                          onChange={ props.dropdownOnChange } />
+            </Grid.Column>
+            <Grid.Column width={3} floated="right">
                 <SearchDropdown { ...props.getEmployeesSkillsSearchData()}/>
             </Grid.Column>
             <Grid.Column width={16}>
