@@ -170,6 +170,11 @@ export class Profile extends Component {
         text: item
     }));
 
+    addEmptyProject = array => {
+        array.unshift({ value: '', text: 'no project' });
+        return array
+    };
+
     onAddNewPositionItem = (e) => {
         if(e.which === 13) {
             if(this.state.preparedPositions.includes(this.state.positionSearch)) {
@@ -236,24 +241,35 @@ export class Profile extends Component {
     };
 
     onAddNewProjectToArray = () => {
-        if (this.state.prevProject !== this.state.project && this.state.project)
+        if (this.state.prevProject !== this.state.project
+            && this.state.project && !this.state.projects.includes(this.state.project))
             this.setState(prevState => ({
                 projects: !prevState.projects.includes(this.state.project)
                     ? [...prevState.projects, this.state.project]
                     : prevState.projects
             }), this.continueSaveData);
+        else this.continueSaveData();
     };
 
     checkProjectsArray = () => {
         if (this.state.projects.includes('undefined') || this.state.projects.includes('')) {
             const filtredArray = this.state.projects.filter(project => project !== 'undefined' && project !== '');
             this.setState({ projects: filtredArray }, this.onCheckProjectsArray)
-        }
+        } else this.onCheckProjectsArray();
     };
 
     onCheckProjectsArray = () => {
-        if (!this.state.projects.length && this.state.project)
-            this.setState({ projects: [ this.state.project ]})
+        if (!this.state.projects.length && this.state.project) {
+            this.setState({ projects: [ this.state.project ]});
+        } else if (this.state.projects.length && !this.state.projects.includes(this.state.project) && this.state.project) {
+            this.setState(prevState => ({
+                projects: [
+                    ...prevState.projects,
+                    prevState.project
+                ]
+            }))
+        }
+
     };
 
     render() {
@@ -341,7 +357,7 @@ export class Profile extends Component {
                                           placeholder="Project"
                                           disabled={ this.state.readOnly }
                                           value={ this.state.project }
-                                          options={ this.prepareOptions(this.state.preparedProjects)}
+                                          options={ this.addEmptyProject(this.prepareOptions(this.state.preparedProjects))}
                                           onChange={ (e, data) => { this.setState({ project: data.value }) }}
                                           onSearchChange={ (e, value) => { this.setState({ projectSearch: value }) } }
                                           onKeyDown={ this.onAddNewProjectItem } />
