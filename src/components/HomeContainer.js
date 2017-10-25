@@ -167,7 +167,7 @@ export class HomeContainer extends Component {
         }];
 
         this.state.employees.forEach((employee, index) => {
-            if (!this.hasItem(options, employee[key]) && employee[key]) options.push({
+            if (!this.hasItem(options, employee[key]) && employee[key] && employee[key]) options.push({
                 text: employee[key],
                 value: employee[key],
                 key: index + 1
@@ -201,10 +201,15 @@ export class HomeContainer extends Component {
 
     setChangedState = ({ dataKey, value }) => {
         if (dataKey === 'firstName') {
-            const [ firstName, lastName ] = value.replace(/\s{1,}/g, ' ').split(' ');
-            this.setState({
-                firstName,
-                lastName
+            if (value) {
+                const [ firstName, lastName ] = value.replace(/\s{1,}/g, ' ').split(' ');
+                this.setState({
+                    firstName,
+                    lastName
+                }, this.filterTable)
+            } else this.setState({
+                firstName: '',
+                lastName: ''
             }, this.filterTable)
         } else this.setState({ [dataKey]: value }, this.filterTable)
     };
