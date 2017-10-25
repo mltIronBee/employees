@@ -253,7 +253,7 @@ export class Profile extends Component {
 
     onCheckProjectsArray = () => {
         if (!this.state.projects.length && this.state.project)
-            setState({ projects: [ this.state.project ]})
+            this.setState({ projects: [ this.state.project ]})
     };
 
     render() {
