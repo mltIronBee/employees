@@ -16,27 +16,17 @@ export const Home = (props) => (
             </Grid.Column>
         </Grid.Row>
         <Grid.Row>
-            <Grid.Column width={3} floated="right">
+            <Grid.Column width={4} floated="right">
                 <Dropdown fluid
                           search
                           dataKey='firstName'
                           selection
                           scrolling
-                          options={ props.prepareOptionsForSearch('firstName') }
+                          options={ props.prepareOptionForFirstAndLastName() }
                           placeholder='Searched first name'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
-            <Grid.Column width={3} floated="right">
-                <Dropdown fluid
-                          search
-                          dataKey='lastName'
-                          selection
-                          scrolling
-                          options={ props.prepareOptionsForSearch('lastName') }
-                          placeholder='Searched last name'
-                          onChange={ props.dropdownOnChange } />
-            </Grid.Column>
-            <Grid.Column width={3} floated="right">
+            <Grid.Column width={4} floated="right">
                 <Dropdown fluid
                           search
                           dataKey='project'
@@ -46,7 +36,7 @@ export const Home = (props) => (
                           placeholder='Searched project'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
-            <Grid.Column width={3} floated="right">
+            <Grid.Column width={4} floated="right">
                 <SearchDropdown { ...props.getEmployeesSkillsSearchData()}/>
             </Grid.Column>
             <Grid.Column width={16}>

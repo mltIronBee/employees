@@ -166,14 +166,30 @@ export class HomeContainer extends Component {
             key: 0
         }];
 
-        let index = 1;
-        this.state.employees.forEach(employee => {
+        this.state.employees.forEach((employee, index) => {
             if (!this.hasItem(options, employee[key]) && employee[key] !== '') options.push({
                 text: employee[key],
                 value: employee[key],
-                key: index
+                key: index + 1
             });
-            index++
+        });
+
+        return options
+    };
+
+    prepareOptionForFirstAndLastName = () => {
+        const options = [{
+            text: 'selected none',
+            value: '',
+            key: 0
+        }];
+
+        this.state.employees.forEach((employee, index) => {
+            options.push({
+                text: `${employee.firstName} ${employee.lastName}`,
+                value: `${employee.firstName} ${employee.lastName}`,
+                key: index + 1
+            })
         });
 
         return options
@@ -184,7 +200,13 @@ export class HomeContainer extends Component {
     };
 
     setChangedState = ({ dataKey, value }) => {
-        this.setState({ [dataKey]: value }, this.filterTable)
+        if (dataKey === 'firstName') {
+            const [ firstName, lastName ] = value.split(' ');
+            this.setState({
+                firstName,
+                lastName
+            }, this.filterTable)
+        } else this.setState({ [dataKey]: value }, this.filterTable)
     };
 
     // filterTable = values => {
@@ -237,7 +259,7 @@ export class HomeContainer extends Component {
                 index: index + 1,
                 firstName: employee.firstName,
                 lastName: employee.lastName,
-                project: employee.project,
+                project: employee.project || '',
                 position: employee.position,
                 startedAt: employee.startedAt,
                 actions: (
@@ -402,11 +424,12 @@ export class HomeContainer extends Component {
                      onUserClick={ this.onUserClick }
                      onSearchUsers={ this.onFilterUsers }
                      dropdownOnChange={ this.dropdownOnChange }
-                     prepareOptionsForSearch={ this.prepareOptionsForSearch }/>
+                     prepareOptionsForSearch={ this.prepareOptionsForSearch }
+                     prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }/>
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                     prepareOptionsForSearch={ this.prepareOptionsForSearch }
                     dropdownOnChange={ this.dropdownOnChange }
-            />
+                    prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }/>
     }
 }

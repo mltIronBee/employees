@@ -85,23 +85,36 @@ export class Profile extends Component {
         this.setState({readOnly: false});
     };
 
-    deleteSkill = (skillValue) => {
+    renderProjectsData = () => {
+        return this.state.projects.length
+            ? this.state.projects.map((project, index) => (
+                <Table.Row key={index + 1}>
+                    <Table.Cell>{index + 1}</Table.Cell>
+                    <Table.Cell>{project}</Table.Cell>
+                </Table.Row>
+            ))
+            : (<Table.Row><Table.Cell>No projects yet</Table.Cell></Table.Row>)
+    };
+
+    deleteSkill = skillValue => {
         this.setState(prevState => ({
             skills: prevState.skills.filter(skill => skill !== skillValue)
         }));
     };
 
-    saveData = (e) => {
-
+    saveData = e => {
         e.preventDefault();
-        let { _id, firstName, lastName, position, project, startedAt, skills, isCreating, readyForTransition } = this.state;
+        this.onAddNewProjectToArray();
+    };
+
+    continueSaveData = () => {
+        let { _id, firstName, lastName, position, project, projects, startedAt, skills, isCreating, readyForTransition } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
         if(!firstName) return this.notification.show('First name must be required!', 'danger');
         if(!lastName) return this.notification.show('Last name must be required!', 'danger');
         if(!position) return this.notification.show('Position must be required!', 'danger');
         if(!startedAt) return this.notification.show('Start date must be required!', 'danger');
-        this.onAddNewProjectToArray();
 
         const data = new FormData();
 
@@ -114,11 +127,9 @@ export class Profile extends Component {
         data.append('image', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
         // Todo: fix code below
         skills.forEach(skill => data.append('skills[]', skill));
-        this.state.projects.forEach(project => data.append('projects[]', project));
+        projects.forEach(project => data.append('projects[]', project));
 
-        if(!isCreating) {
-            data.append('_id', _id);
-        }
+        if(!isCreating) data.append('_id', _id);
 
         http.post(requestUrl, data)
             .then(res => {
@@ -226,7 +237,7 @@ export class Profile extends Component {
                 projects: !prevState.projects.includes(this.state.project)
                     ? [...prevState.projects, this.state.project]
                     : prevState.projects
-            }));
+            }), this.continueSaveData);
     };
 
     checkProjectsArray = () => {
@@ -326,13 +337,17 @@ export class Profile extends Component {
                             </Form.Field>
                             <Form.Field>
                                 <label>Projects</label>
-                                <Dropdown fluid
-                                          className='projects-dropdown'
-                                          placeholder="Projects"
-                                          scrolling
-                                          floating
-                                          disabled={this.state.readOnly}
-                                          options={ this.prepareOptions(this.state.projects)}/>
+                                <div className={this.state.projects.length > 3 ? 'table-body-projects' : ''}>
+                                    <Table singleLine
+                                           compact
+                                           fixed
+                                           size='small'
+                                           color='blue'>
+                                        <Table.Body>
+                                            {this.renderProjectsData()}
+                                        </Table.Body>
+                                    </Table>
+                                </div>
                             </Form.Field>
                             <Form.Field>
                                 <Checkbox className='ready-for-transition-checkbox'

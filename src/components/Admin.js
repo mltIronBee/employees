@@ -12,27 +12,17 @@ export const Admin = (props) => (
                        placeholder='Search...'
                        onChange={ props.onSearchUsers } />
             </Grid.Column>
-            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
+            <Grid.Column width={3} floated="right">
                 <Dropdown fluid
                           search
                           dataKey='firstName'
                           selection
                           scrolling
-                          options={ props.prepareOptionsForSearch('firstName') }
+                          options={ props.prepareOptionForFirstAndLastName() }
                           placeholder='Searched first name'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
-            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
-                <Dropdown fluid
-                          search
-                          dataKey='lastName'
-                          selection
-                          scrolling
-                          options={ props.prepareOptionsForSearch('lastName') }
-                          placeholder='Searched last name'
-                          onChange={ props.dropdownOnChange } />
-            </Grid.Column>
-            <Grid.Column width={2} floated="right" style={{ padding: 0 }}>
+            <Grid.Column width={3} floated="right" style={{ padding: 0 }}>
                 <Dropdown fluid
                           search
                           dataKey='project'

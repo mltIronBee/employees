@@ -106,3 +106,8 @@ header i {
   white-space: normal;
   outline: 0;
 }
+
+.table-body-projects {
+  height: 100px;
+  overflow-y: scroll;
+}
