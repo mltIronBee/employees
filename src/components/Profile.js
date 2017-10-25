@@ -43,7 +43,7 @@ export class Profile extends Component {
                     this.setState({
                         preparedSkills: skills ? skills : [],
                         preparedPositions: positions ? positions : [],
-                        preparedProjects: projects ? projects : [],
+                        preparedProjects: this.filterArrayOfProject(projects),
                         isCreating: true,
                         readOnly: false
                     });
@@ -69,17 +69,21 @@ export class Profile extends Component {
                         imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
                         preparedPositions: positions,
                         preparedSkills: skills,
-                        preparedProjects: projects,
+                        preparedProjects: this.filterArrayOfProject(projects),
                         prevProject: !employee.project ? prevState.project : employee.project,
                         projects: employee.projects,
                         readyForTransition: !!employee.readyForTransition
-                    }));
-
-                    this.checkProjectsArray();
+                    }), this.checkProjectsArray);
                 })
                 .catch(console.log);
         }
     }
+
+    filterArrayOfProject = projects => {
+        return projects.length
+            ? projects.filter(project => project !== 'undefined' && project !== '')
+            : []
+    };
 
     readOnlyFalse = () => {
         this.setState({readOnly: false});
@@ -232,7 +236,7 @@ export class Profile extends Component {
     };
 
     onAddNewProjectToArray = () => {
-        if (this.state.prevProject !== this.state.project && !this.state.project)
+        if (this.state.prevProject !== this.state.project && this.state.project)
             this.setState(prevState => ({
                 projects: !prevState.projects.includes(this.state.project)
                     ? [...prevState.projects, this.state.project]
@@ -241,8 +245,10 @@ export class Profile extends Component {
     };
 
     checkProjectsArray = () => {
-        if (!this.state.projects.length && !this.state.project)
-            this.setState(prevState => ({ projects: [this.state.project] }))
+        if (this.state.projects.includes('undefined') || this.state.projects.includes('')) {
+            const filtredArray = this.state.projects.filter(project => project !== 'undefined' && project !== '');
+            this.setState({ projects: filtredArray })
+        }
     };
 
     render() {
