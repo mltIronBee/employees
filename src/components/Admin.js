@@ -19,7 +19,7 @@ export const Admin = (props) => (
                           selection
                           scrolling
                           options={ props.prepareOptionForFirstAndLastName() }
-                          placeholder='Searched first name'
+                          placeholder='Searched first name or last name'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
             <Grid.Column width={3} floated="right" style={{ padding: 0 }}>
