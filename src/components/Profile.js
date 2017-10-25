@@ -63,16 +63,16 @@ export class Profile extends Component {
                         firstName: employee.firstName,
                         lastName: employee.lastName,
                         position: employee.position,
-                        project: employee.project,
+                        project: employee.project || null,
                         startedAt: new Date(employee.startedAt).toISOString().split('T')[0],
                         skills: employee.skills,
                         imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
                         preparedPositions: positions,
                         preparedSkills: skills,
                         preparedProjects: projects,
-                        prevProject: employee.project,
+                        prevProject: employee.project || null,
                         projects: employee.projects,
-                        readyForTransition: employee.readyForTransition
+                        readyForTransition: !!employee.readyForTransition
                     }));
 
                     this.checkProjectsArray();
@@ -232,7 +232,7 @@ export class Profile extends Component {
     };
 
     onAddNewProjectToArray = () => {
-        if (this.state.prevProject !== this.state.project && this.state.project !== '')
+        if (this.state.prevProject !== this.state.project && !this.state.project)
             this.setState(prevState => ({
                 projects: !prevState.projects.includes(this.state.project)
                     ? [...prevState.projects, this.state.project]
@@ -241,7 +241,7 @@ export class Profile extends Component {
     };
 
     checkProjectsArray = () => {
-        if (!this.state.projects.length && this.state.project !== '')
+        if (!this.state.projects.length && !this.state.project)
             this.setState(prevState => ({ projects: [this.state.project] }))
     };
 
