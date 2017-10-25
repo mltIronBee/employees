@@ -240,7 +240,7 @@ export class HomeContainer extends Component {
 
     filtredByAnotherCriteria = (criteria, employee) => {
         return this.state[criteria] !== ''
-            ? employee[criteria].includes(this.state[criteria])
+            ? employee[criteria] ? employee[criteria].includes(this.state[criteria]) : false
             : true
     };
 
