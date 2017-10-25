@@ -63,14 +63,14 @@ export class Profile extends Component {
                         firstName: employee.firstName,
                         lastName: employee.lastName,
                         position: employee.position,
-                        project: employee.project || null,
+                        project: !employee.project ? prevState.project : employee.project,
                         startedAt: new Date(employee.startedAt).toISOString().split('T')[0],
                         skills: employee.skills,
                         imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
                         preparedPositions: positions,
                         preparedSkills: skills,
                         preparedProjects: projects,
-                        prevProject: employee.project || null,
+                        prevProject: !employee.project ? prevState.project : employee.project,
                         projects: employee.projects,
                         readyForTransition: !!employee.readyForTransition
                     }));
