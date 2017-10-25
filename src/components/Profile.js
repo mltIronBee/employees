@@ -247,8 +247,13 @@ export class Profile extends Component {
     checkProjectsArray = () => {
         if (this.state.projects.includes('undefined') || this.state.projects.includes('')) {
             const filtredArray = this.state.projects.filter(project => project !== 'undefined' && project !== '');
-            this.setState({ projects: filtredArray })
+            this.setState({ projects: filtredArray }, this.onCheckProjectsArray)
         }
+    };
+
+    onCheckProjectsArray = () => {
+        if (!this.state.projects.length && this.state.project)
+            setState({ projects: [ this.state.project ]})
     };
 
     render() {
