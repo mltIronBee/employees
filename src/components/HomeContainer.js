@@ -167,7 +167,7 @@ export class HomeContainer extends Component {
         }];
 
         this.state.employees.forEach((employee, index) => {
-            if (!this.hasItem(options, employee[key]) && employee[key] !== '') options.push({
+            if (!this.hasItem(options, employee[key]) && employee[key]) options.push({
                 text: employee[key],
                 value: employee[key],
                 key: index + 1
@@ -201,7 +201,7 @@ export class HomeContainer extends Component {
 
     setChangedState = ({ dataKey, value }) => {
         if (dataKey === 'firstName') {
-            const [ firstName, lastName ] = value.split(' ');
+            const [ firstName, lastName ] = value.replace(/\s{1,}/g, ' ').split(' ');
             this.setState({
                 firstName,
                 lastName
@@ -240,7 +240,7 @@ export class HomeContainer extends Component {
 
     filtredByAnotherCriteria = (criteria, employee) => {
         return this.state[criteria] !== ''
-            ? employee[criteria] === this.state[criteria]
+            ? employee[criteria].includes(this.state[criteria])
             : true
     };
 
