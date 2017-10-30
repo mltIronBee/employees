@@ -31,6 +31,22 @@ const storage = multer.diskStorage({
     }
 });
 
+const requiredAuthMiddleware = (req, res, next) => {
+    const authObj = auth(req);
+
+    if (!authObj) return res.status(401).end();
+
+    db.findByLogin(authObj.name)
+        .then(user => {
+            if (user.password !== authObj.pass) {
+                res.status(401).end();
+            } else {
+                next();
+            }
+        })
+        .catch(() => res.status(404).end());
+};
+
 const multerMiddleware = multer({ storage }).single('image');
 
 const uniqueLoginMiddleware = (req, res, next) =>
@@ -64,7 +80,7 @@ apiRoutes.get('/login', (req, res) => {
         .catch(() => res.status(404).end());
 });
 
-apiRoutes.get('/admin', (req, res) => {
+apiRoutes.get('/admin', requiredAuthMiddleware, (req, res) => {
     const { name: login } = auth(req);
 
     db.getAllUsers(login)
@@ -72,13 +88,13 @@ apiRoutes.get('/admin', (req, res) => {
         .catch(err => res.status(400).end(err));
 });
 
-apiRoutes.post('/register', uniqueLoginMiddleware, (req, res) => {
+apiRoutes.post('/register', requiredAuthMiddleware, uniqueLoginMiddleware, (req, res) => {
     db.createUser(req.body)
         .then(result => res.send(result))
         .catch(err => res.status(400).end(err));
 });
 
-apiRoutes.post('/employee/create', multerMiddleware, (req, res) => {
+apiRoutes.post('/employee/create', requiredAuthMiddleware, multerMiddleware, (req, res) => {
     const { body: employeeData } = req;
     const { name: login } = auth(req);
 
@@ -95,24 +111,24 @@ apiRoutes.post('/employee/create', multerMiddleware, (req, res) => {
         });
 });
 
-apiRoutes.get('/employee/create', (req, res) => {
+apiRoutes.get('/employee/create', requiredAuthMiddleware, (req, res) => {
     db.getSkillsPositionsProjects()
-        .then(([ skills, positions, projects ]) =>
-            res.send({ skills, positions, projects })
-        )
-        .catch(err => res.status(400).send(err))
+        .then(data => res.send(data))
+        .catch(err => {
+            console.log(err);
+            res.status(400).send(err)
+        })
 });
 
-apiRoutes.get('/employee', (req, res) => {
-
+apiRoutes.get('/employee', requiredAuthMiddleware, (req, res) => {
     db.getEmployeeById(req.query._id)
-        .then(([ employee, skills, positions, projects ]) =>
-            res.send({ employee, skills, positions, projects })
-        )
-        .catch(err => res.status(400).send(err));
+        .then(data => res.send(data))
+        .catch(err => {
+            res.status(400).send(err)
+        });
 });
 
-apiRoutes.get('/employees', (req, res) => {
+apiRoutes.get('/employees', requiredAuthMiddleware, (req, res) => {
     const { name: login } = auth(req);
 
     db.getAllEmployees(login)
@@ -120,7 +136,7 @@ apiRoutes.get('/employees', (req, res) => {
         .catch(err => res.status(400).send(err));
 });
 
-apiRoutes.post('/employee/update', multerMiddleware, (req, res) => {
+apiRoutes.post('/employee/update',requiredAuthMiddleware, multerMiddleware, (req, res) => {
     const { body: userData } = req;
 
     userData.imageUrl = currentUploadedImageName
@@ -138,7 +154,7 @@ apiRoutes.post('/employee/update', multerMiddleware, (req, res) => {
         })
 });
 
-apiRoutes.post('/employee/delete', (req, res) => {
+apiRoutes.post('/employee/delete', requiredAuthMiddleware, (req, res) => {
     db.deleteEmployee(req.body.id)
        .then(result => {
            res.send(result);
@@ -148,31 +164,31 @@ apiRoutes.post('/employee/delete', (req, res) => {
        })
 });
 
-apiRoutes.get('/projects', (req, res) => {
+apiRoutes.get('/projects', requiredAuthMiddleware, (req, res) => {
    db.getAllProjects()
        .then(result => res.send(result))
        .catch(err => res.status(400).send(err))
 });
 
-apiRoutes.get('/project', (req, res) => {
+apiRoutes.get('/project', requiredAuthMiddleware, (req, res) => {
     db.getProjectById(req.query._id)
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))
 });
 
-apiRoutes.post('/project/create', (req, res) => {
+apiRoutes.post('/project/create', requiredAuthMiddleware, (req, res) => {
     db.createProject(req.body)
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))
 });
 
-apiRoutes.post('/project/update', (req, res) => {
+apiRoutes.post('/project/update', requiredAuthMiddleware, (req, res) => {
     db.updateProjectData(req.body._id, req.body)
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))
 });
 
-apiRoutes.post('/project/delete', (req, res) => {
+apiRoutes.post('/project/delete', requiredAuthMiddleware, (req, res) => {
     db.deleteProject(req.body._id)
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))

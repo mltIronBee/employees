@@ -58,31 +58,35 @@ export const getAllEmployees = login =>
 
 export const getSkillsPositionsProjects = () => {
     return Promise.all([getAllSkillsAndPositionsFromEmployees(), getAllProjects()])
-        .then(([ result , projects]) => {
-            let preparedSkills = [], preparedPositions = [];
-            const preparedProjects = projects.map(project => project.name);
+        .then(([ skillsAndPositions, projects ]) => {
+            const reduced = skillsAndPositions
+                .reduce((acc, { skills, position }) => {
+                    acc.skills = [...acc.skills, ...skills];
+                    if (!acc.positions.includes(position))
+                        acc.positions.push(position);
 
-            result.forEach(item => {
-                preparedSkills = [...preparedSkills, ...item.skills];
-                preparedPositions.push(item.position);
+                    return acc;
+                }, { skills: [], positions: [] });
+
+            return Object.assign(reduced, {
+                projects,
+                skills: reduced.skills.filter(
+                    (x, idx, arr) => arr.indexOf(x) === idx
+                )
             });
-
-            preparedSkills = preparedSkills.filter(uniqueFilter);
-            preparedPositions = preparedPositions.filter(uniqueFilter);
-
-            return [preparedSkills, preparedPositions, preparedProjects]
         });
 };
-
-const uniqueFilter = (item, index, arr) => arr.indexOf(item) === index;
 
 const getAllSkillsAndPositionsFromEmployees = () =>
     Employee.find().select('skills position').exec();
 
 export const getEmployeeById = id =>
     getSkillsPositionsProjects()
-        .then(([skills, positions, projects]) =>
-            Promise.all([Employee.findById(id), skills, positions, projects])
+        .then(data =>
+            Promise.all([Employee.findById(id).populate('projects'), data])
+        )
+        .then(([ employee, data ]) =>
+            Object.assign({}, data, { employee })
         );
 
 export const updateEmployeeData = (id, data) =>

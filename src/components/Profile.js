@@ -35,9 +35,7 @@ export class Profile extends Component {
     uploadedImage = null;
 
     componentDidMount() {
-
         if (this.props.params.method === 'create') {
-
             http.get(`${apiPrefix}/employee/create`)
                 .then(({data : { skills, positions, projects }}) => {
                     this.setState({
@@ -57,7 +55,6 @@ export class Profile extends Component {
                 }
             })
                 .then(({ data: { employee, skills, positions, projects } }) => {
-
                     this.setState(prevState => ({
                         _id: employee._id,
                         firstName: employee.firstName,
@@ -81,7 +78,7 @@ export class Profile extends Component {
 
     filterArrayOfProject = projects => {
         return projects.length
-            ? projects.filter(project => project !== 'undefined' && project !== '')
+            ? projects.filter(project => !!project)
             : []
     };
 
@@ -92,9 +89,9 @@ export class Profile extends Component {
     renderProjectsData = () => {
         return this.state.projects.length
             ? this.state.projects.map((project, index) => (
-                <Table.Row key={index + 1}>
+                <Table.Row key={index}>
                     <Table.Cell>{index + 1}</Table.Cell>
-                    <Table.Cell>{project}</Table.Cell>
+                    <Table.Cell>{project.name}</Table.Cell>
                 </Table.Row>
             ))
             : (<Table.Row><Table.Cell>No projects yet</Table.Cell></Table.Row>)
@@ -112,13 +109,13 @@ export class Profile extends Component {
     };
 
     continueSaveData = () => {
-        let { _id, firstName, lastName, position, project, projects, startedAt, skills, isCreating, readyForTransition } = this.state;
+        const { _id, firstName, lastName, position, project, projects, startedAt, skills, isCreating, readyForTransition } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
-        if(!firstName) return this.notification.show('First name must be required!', 'danger');
-        if(!lastName) return this.notification.show('Last name must be required!', 'danger');
-        if(!position) return this.notification.show('Position must be required!', 'danger');
-        if(!startedAt) return this.notification.show('Start date must be required!', 'danger');
+        if (!firstName) return this.notification.show('First name must be required!', 'danger');
+        if (!lastName) return this.notification.show('Last name must be required!', 'danger');
+        if (!position) return this.notification.show('Position must be required!', 'danger');
+        if (!startedAt) return this.notification.show('Start date must be required!', 'danger');
 
         const data = new FormData();
 
@@ -357,7 +354,14 @@ export class Profile extends Component {
                                           placeholder="Project"
                                           disabled={ this.state.readOnly }
                                           value={ this.state.project }
-                                          options={ this.addEmptyProject(this.prepareOptions(this.state.preparedProjects))}
+                                          options={
+                                              this.addEmptyProject(
+                                                  this.state.preparedProjects.map(project => ({
+                                                      value: project._id,
+                                                      text: project.name
+                                                  }))
+                                              )
+                                          }
                                           onChange={ (e, data) => { this.setState({ project: data.value }) }}
                                           onSearchChange={ (e, value) => { this.setState({ projectSearch: value }) } }
                                           onKeyDown={ this.onAddNewProjectItem } />
