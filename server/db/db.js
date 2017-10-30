@@ -1,54 +1,47 @@
 import mongoose from 'mongoose';
-
 import { dbConfig } from '../../config';
-
 import { User } from './models/User';
 import { Employee } from './models/Employee';
+import { Project } from "./models/Project";
 
-export const setUpConnection = () => {
-  mongoose.connect(`mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
-};
+export const setUpConnection = () =>
+    mongoose.connect(`mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
 
 export const findByLogin = login => {
     return User.findOne({ login });
 };
 
-export const initializeDb = () => {
-    findByLogin('admin').then(user => {
-
-        if(!user) {
-            const user = new User({
+export const initializeDb = () =>
+    findByLogin('admin')
+        .then(user => !user
+            ? new User({
                 login: 'admin',
                 firstName: 'admin',
                 lastName: 'admin',
                 password: 'admin',
                 isAdmin: true
-            });
+            }).save()
+            : user
+        );
 
-            user.save();
-        }
-    })
-};
-
-export const getAllUsers = adminLogin => {
-    return User
+export const getAllUsers = adminLogin =>
+    User
         .find()
         .populate('employees')
-        .then(users => {
-            //Todo: reduce password from user object to not have it on client
-            return users.filter(user => user.login !== adminLogin);
-        });
-};
+        .then(users =>
+            users.filter(user => {
+                delete user.password;
+                return user.login !== adminLogin;
+            })
+        );
 
-export const createUser = (data) => {
-    return new User(data).save();
-};
+export const createUser = data =>
+    (new User(data)).save();
 
-export const createEmployee = (data, login) => {
-    return new Employee(data).save()
-        .then(employee => {
-            return Promise.all([findByLogin(login), employee]);
-        })
+export const createEmployee = (data, login) =>
+    (new Employee(data))
+        .save()
+        .then(employee => Promise.all([ findByLogin(login), employee ]))
         .then(([user, employee]) => {
             user.employees = [
                 ...user.employees,
@@ -57,50 +50,58 @@ export const createEmployee = (data, login) => {
 
             return Promise.all([employee, user.save()])
         });
-};
 
-export const getAllEmployees = login => {
-    return findByLogin(login)
+export const getAllEmployees = login =>
+    findByLogin(login)
         .populate('employees')
-        .then(user => user.employees)
-};
+        .then(user => user.employees);
 
 export const getSkillsPositionsProjects = () => {
-    return Employee.find()
-        .select('skills position project')
-        .exec()
-        .then(result => {
-            let preparedSkills = [], preparedPositions = [], preparedProjects = [];
-
-            const uniqueFilter = (item, index, self) => self.indexOf(item) === index;
+    return Promise.all([getAllSkillsAndPositionsFromEmployees(), getAllProjects()])
+        .then(([ result , projects]) => {
+            let preparedSkills = [], preparedPositions = [];
+            const preparedProjects = projects.map(project => project.name);
 
             result.forEach(item => {
                 preparedSkills = [...preparedSkills, ...item.skills];
                 preparedPositions.push(item.position);
-                preparedProjects.push(item.project);
             });
 
             preparedSkills = preparedSkills.filter(uniqueFilter);
             preparedPositions = preparedPositions.filter(uniqueFilter);
-            preparedProjects = preparedProjects.filter(uniqueFilter);
 
-            return [preparedSkills, preparedPositions, preparedProjects];
+            return [preparedSkills, preparedPositions, preparedProjects]
         });
 };
 
-export const getEmployeeById = (_id) => {
-    return getSkillsPositionsProjects()
-        .then(([ skills, positions, projects ]) => {
-            const employeePromise = Employee.findById(_id);
+const uniqueFilter = (item, index, arr) => arr.indexOf(item) === index;
 
-            return Promise.all([employeePromise, skills, positions, projects]);
-        });
-};
+const getAllSkillsAndPositionsFromEmployees = () =>
+    Employee.find().select('skills position').exec();
 
-export const updateEmployeeData = (_id, data) => {
-    return Employee.findByIdAndUpdate(_id, { $set: data });
-};
+export const getEmployeeById = id =>
+    getSkillsPositionsProjects()
+        .then(([skills, positions, projects]) =>
+            Promise.all([Employee.findById(id), skills, positions, projects])
+        );
 
-export const deleteEmployee = (_id) => {
-    return Employee.findByIdAndRemove(_id);
-};
+export const updateEmployeeData = (id, data) =>
+    Employee.findByIdAndUpdate(id, { $set: data });
+
+export const deleteEmployee = id =>
+    Employee.findByIdAndRemove(id);
+
+export const createProject = data =>
+    (new Project(data)).save();
+
+export const updateProjectData = (id, data) =>
+    Project.findByIdAndUpdate(id, { $set: data });
+
+export const deleteProject = id =>
+    Project.findByIdAndRemove(id);
+
+export const getAllProjects = () =>
+    Project.find();
+
+export const getProjectById = id =>
+    Project.findById(id);

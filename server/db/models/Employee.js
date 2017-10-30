@@ -1,9 +1,6 @@
-import mongoose from 'mongoose';
-
-const Schema = mongoose.Schema;
+import mongoose, { Schema } from 'mongoose';
 
 const EmployeeSchema = new Schema({
-
     firstName: {
         type: String,
         required: true
@@ -31,17 +28,19 @@ const EmployeeSchema = new Schema({
         type: String
     },
 
-    project: {
-        type: String
-    },
+    projects: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Project'
+    }],
 
     readyForTransition: {
         type: Boolean
     },
 
-    projects: {
-        type: Array
-    }
+    projectsHistory: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Project'
+    }]
 });
 
 export const Employee = mongoose.model('Employee', EmployeeSchema);

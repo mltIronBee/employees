@@ -1,9 +1,6 @@
-import mongoose from 'mongoose';
-
-const Schema = mongoose.Schema;
+import mongoose, { Schema } from 'mongoose';
 
 const UserSchema = new Schema({
-
     login: {
         type: String,
         unique: true,
