@@ -151,7 +151,7 @@ export class HomeContainer extends Component {
         this.state.employees.forEach(employee => {
             (employee.projects && employee.projects.length) &&
             employee.projects.forEach(project => {
-                if(!this.hasItem(options, project)) {
+                if(!this.hasItem(options, project.name)) {
                     options.push({
                         text: project.name,
                         value: project.name,
@@ -416,7 +416,17 @@ export class HomeContainer extends Component {
         entity: 'employee'
     });
 
-    onUserClick = (userId) => {
+    onUserClick = userId => {
+        this.setState({
+            projects: [],
+            firstName: '',
+            lastName: '',
+            skills: [],
+            filtered: []
+        }, () => this.onUserClickContinue(userId))
+    };
+
+    onUserClickContinue = userId => {
         let employees = this.state.users
             .find(user => user._id === userId)
             .employees;
