@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import { browserHistory, Link } from 'react-router';
 import { Table, Icon, Menu, Dropdown } from 'semantic-ui-react';
-import http, { setAuthHeader } from '../helpers/http';
+import http from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
 import { Admin } from './Admin';
@@ -61,35 +62,19 @@ export class HomeContainer extends Component {
     ];
 
     initializeUser = () => {
-        const key = localStorage.getItem('Authorization');
-
-        if(key) {
-            setAuthHeader(key);
-
-            http.get(`${apiPrefix}/login`)
-                .then(({ data: user }) => {
-                    if(user.isAdmin) {
-                        return http.get(`${apiPrefix}/admin`)
-                            .then(({ data: users }) => {
-                                this.setState({
-                                    users,
-                                    isAdmin: true
-                                });
-                            });
-                    } else {
-                        return http.get(`${apiPrefix}/employees`)
-                            .then(({ data }) => {
-                                this.setState({ employees: this.formatEmployeesDate(data) })
-                            });
-                    }
-                })
-                .catch(err => {
-                    localStorage.removeItem('Authorization');
-                    browserHistory.push('/login');
+        if (this.props.isAdmin) {
+            return http.get(`${apiPrefix}/admin`)
+                .then(({ data: users }) => {
+                    this.setState({
+                        users,
+                        isAdmin: true
+                    });
                 });
-
         } else {
-            browserHistory.push('/login');
+            return http.get(`${apiPrefix}/employees`)
+                .then(({ data }) => {
+                    this.setState({ employees: this.formatEmployeesDate(data) })
+                });
         }
     };
 
@@ -133,7 +118,7 @@ export class HomeContainer extends Component {
     };
 
     formatEmployeesDate = (employees) => employees.map(employee => {
-         employee.startedAt = new Date(employee.startedAt).toISOString().split('T')[0];
+         employee.startedAt = moment(employee.startedAt).format('YYYY-MM-DD');
 
          return employee;
     });
@@ -144,16 +129,17 @@ export class HomeContainer extends Component {
         const options = [];
         let key = 0;
         this.state.employees.forEach(employee => {
-            employee.skills.forEach(skill => {
-                if(!this.hasItem(options, skill)) {
-                    options.push({
-                        text: skill,
-                        value: skill,
-                        key
-                    });
-                    key++
-                }
-            });
+            (employee.skills && employee.skills.length) &&
+                employee.skills.forEach(skill => {
+                    if(!this.hasItem(options, skill)) {
+                        options.push({
+                            text: skill,
+                            value: skill,
+                            key
+                        });
+                        key++
+                    }
+                });
         });
 
         return options;
@@ -250,7 +236,7 @@ export class HomeContainer extends Component {
     };
 
     getClassName = employee => {
-        return !employee.project
+        return !employee.projects.length
             ? 'empty-project'
             : employee.readyForTransition
                 ? 'ready-for-transition'
@@ -264,12 +250,13 @@ export class HomeContainer extends Component {
                 index: index + 1,
                 firstName: employee.firstName,
                 lastName: employee.lastName,
-                project: employee.project || '',
+                projects: this.getStringOfNameProjects(employee.projects),
                 position: employee.position,
                 startedAt: employee.startedAt,
                 actions: (
                     <Table.Cell key={ index + 3 }>
                         <UserPopup user={ employee }
+                                   projects={this.getStringOfNameProjects(employee.projects)}
                                    key={ index + 2 }
                                    trigger={
                                        <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
@@ -293,7 +280,9 @@ export class HomeContainer extends Component {
         }
     };
 
-    renderEmployeesTable = ({ className, index, firstName, lastName, position, project, startedAt, actions }) => ({
+    getStringOfNameProjects = projects => projects.map(project => project.name).join(', ');
+
+    renderEmployeesTable = ({ className, index, firstName, lastName, position, projects, startedAt, actions }) => ({
         key: index,
         className,
         cells: [
@@ -301,7 +290,7 @@ export class HomeContainer extends Component {
             firstName,
             lastName,
             position,
-            project,
+            projects,
             startedAt,
             actions
         ]
@@ -365,7 +354,7 @@ export class HomeContainer extends Component {
         headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Project', 'Started At', 'Actions'],
         footerRow: (
             <Table.Row>
-                <Table.HeaderCell colSpan="6">
+                <Table.HeaderCell colSpan="7">
                     <Dropdown placeholder="Per page"
                               selection
                               value={ this.state.fieldsPerPage }
@@ -399,7 +388,8 @@ export class HomeContainer extends Component {
             : this.prepareEmployeesTableData(this.paginate(this.state.employees)),
         onEmployeeDelete: () => { this.onEmployeeDelete(this.state.currentEmployeeId) },
         onModalClose: () => { this.setState({ isModalOpened: false }) },
-        isModalOpened: this.state.isModalOpened
+        isModalOpened: this.state.isModalOpened,
+        entity: 'employee'
     });
 
     onUserClick = (userId) => {

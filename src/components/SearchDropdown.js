@@ -10,6 +10,6 @@ export const SearchDropdown = (props) => (
               selection
               scrolling
               options={ props.dropdownOptions }
-              placeholder="Searched skills"
+              placeholder="Search skills"
               onChange={ props.onDropdownChange } />
 );

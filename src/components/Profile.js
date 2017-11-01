@@ -13,9 +13,9 @@ export class Profile extends Component {
         firstName: '',
         lastName: '',
         position: '',
-        project: '',
         projects: [],
-        prevProject: '',
+        projectsHistory: [],
+        prevProjects: [],
         startedAt: '',
         skills: [],
         readOnly: true,
@@ -35,9 +35,7 @@ export class Profile extends Component {
     uploadedImage = null;
 
     componentDidMount() {
-
         if (this.props.params.method === 'create') {
-
             http.get(`${apiPrefix}/employee/create`)
                 .then(({data : { skills, positions, projects }}) => {
                     this.setState({
@@ -57,31 +55,39 @@ export class Profile extends Component {
                 }
             })
                 .then(({ data: { employee, skills, positions, projects } }) => {
-
                     this.setState(prevState => ({
                         _id: employee._id,
                         firstName: employee.firstName,
                         lastName: employee.lastName,
                         position: employee.position,
-                        project: !employee.project ? prevState.project : employee.project,
+                        projects: !employee.projects.length
+                            ? this.prepareProjects(prevState.projects)
+                            : this.prepareProjects(employee.projects),
                         startedAt: new Date(employee.startedAt).toISOString().split('T')[0],
                         skills: employee.skills,
                         imageSrc: !employee.imageUrl ? prevState.imageSrc : employee.imageUrl,
                         preparedPositions: positions,
                         preparedSkills: skills,
                         preparedProjects: this.filterArrayOfProject(projects),
-                        prevProject: !employee.project ? prevState.project : employee.project,
-                        projects: employee.projects,
+                        prevProjects: !employee.projects.length
+                            ? this.prepareProjects(prevState.projects)
+                            : this.prepareProjects(employee.projects),
+                        projectsHistory: employee.projectsHistory,
                         readyForTransition: !!employee.readyForTransition
-                    }), this.checkProjectsArray);
+                    }));
+                    //, this.checkProjectsArray
                 })
                 .catch(console.log);
         }
     }
 
+    prepareProjects = projects => {
+        return projects.map((project, index) => project._id)
+    };
+
     filterArrayOfProject = projects => {
         return projects.length
-            ? projects.filter(project => project !== 'undefined' && project !== '')
+            ? projects.filter(project => !!project.name)
             : []
     };
 
@@ -90,11 +96,11 @@ export class Profile extends Component {
     };
 
     renderProjectsData = () => {
-        return this.state.projects.length
-            ? this.state.projects.map((project, index) => (
-                <Table.Row key={index + 1}>
+        return this.state.projectsHistory.length
+            ? this.state.projectsHistory.map((project, index) => (
+                <Table.Row key={index}>
                     <Table.Cell>{index + 1}</Table.Cell>
-                    <Table.Cell>{project}</Table.Cell>
+                    <Table.Cell>{project.name}</Table.Cell>
                 </Table.Row>
             ))
             : (<Table.Row><Table.Cell>No projects yet</Table.Cell></Table.Row>)
@@ -112,37 +118,34 @@ export class Profile extends Component {
     };
 
     continueSaveData = () => {
-        let { _id, firstName, lastName, position, project, projects, startedAt, skills, isCreating, readyForTransition } = this.state;
+        const { _id, firstName, lastName, position, projects, projectsHistory, startedAt, skills, isCreating, readyForTransition } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
-        if(!firstName) return this.notification.show('First name must be required!', 'danger');
-        if(!lastName) return this.notification.show('Last name must be required!', 'danger');
-        if(!position) return this.notification.show('Position must be required!', 'danger');
-        if(!startedAt) return this.notification.show('Start date must be required!', 'danger');
+        if (!firstName) return this.notification.show('First name must be required!', 'danger');
+        if (!lastName) return this.notification.show('Last name must be required!', 'danger');
+        if (!position) return this.notification.show('Position must be required!', 'danger');
+        if (!startedAt) return this.notification.show('Start date must be required!', 'danger');
 
         const data = new FormData();
 
         data.append('firstName', firstName);
         data.append('lastName', lastName);
         data.append('position', position);
-        data.append('project', project);
         data.append('startedAt', startedAt);
         data.append('readyForTransition', readyForTransition);
         data.append('image', this.uploadedImage ? this.uploadedImage : this.state.imageSrc);
         // Todo: fix code below
         skills.forEach(skill => data.append('skills[]', skill));
         projects.forEach(project => data.append('projects[]', project));
+        projectsHistory.forEach(project => data.append('projectsHistory[]', project));
 
         if(!isCreating) data.append('_id', _id);
 
         http.post(requestUrl, data)
             .then(res => {
-                if(isCreating) {
-                    browserHistory.push('/');
-                } else {
                     this.setState({ readOnly: true });
                     this.notification.show('Data is updated');
-                }
+                    browserHistory.push('/');
             })
             .catch(err => {
                 this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
@@ -170,10 +173,6 @@ export class Profile extends Component {
         text: item
     }));
 
-    addEmptyProject = array => {
-        array.unshift({ value: '', text: 'no project' });
-        return array
-    };
 
     onAddNewPositionItem = (e) => {
         if(e.which === 13) {
@@ -241,35 +240,18 @@ export class Profile extends Component {
     };
 
     onAddNewProjectToArray = () => {
-        if (this.state.prevProject !== this.state.project
-            && this.state.project && !this.state.projects.includes(this.state.project))
+        const newProjects = this.compareArrays(this.state.projects, this.state.prevProjects);
+        if (newProjects.length && this.state.projects.length)
             this.setState(prevState => ({
-                projects: !prevState.projects.includes(this.state.project)
-                    ? [...prevState.projects, this.state.project]
-                    : prevState.projects
+                projectsHistory: [...prevState.projectsHistory.map(project => project._id), ...newProjects]
             }), this.continueSaveData);
-        else this.continueSaveData();
+        else this.setState(prevState => ({
+            projectsHistory: prevState.projectsHistory.map(project => project._id)
+        }), this.continueSaveData);
     };
 
-    checkProjectsArray = () => {
-        if (this.state.projects.includes('undefined') || this.state.projects.includes('') || this.state.projects.includes('null')) {
-            const filtredArray = this.state.projects.filter(project => project !== 'undefined' && project !== '' && project !== 'null');
-            this.setState({ projects: filtredArray }, this.onCheckProjectsArray)
-        } else this.onCheckProjectsArray();
-    };
-
-    onCheckProjectsArray = () => {
-        if (!this.state.projects.length && this.state.project) {
-            this.setState({ projects: [ this.state.project ]});
-        } else if (this.state.projects.length && !this.state.projects.includes(this.state.project) && this.state.project) {
-            this.setState(prevState => ({
-                projects: [
-                    ...prevState.projects,
-                    prevState.project
-                ]
-            }))
-        }
-
+    compareArrays = (array1, array2) => {
+        return array1.filter(project => !array2.includes(project))
     };
 
     render() {
@@ -350,21 +332,27 @@ export class Profile extends Component {
                                           onKeyDown={ this.onAddNewPositionItem } />
                             </Form.Field>
                             <Form.Field>
-                                <label>Project</label>
+                                <label>Projects</label>
                                 <Dropdown fluid
                                           search
+                                          multiple
                                           selection
+                                          selectedLabel={this.state.projects}
                                           placeholder="Project"
                                           disabled={ this.state.readOnly }
-                                          value={ this.state.project }
-                                          options={ this.addEmptyProject(this.prepareOptions(this.state.preparedProjects))}
-                                          onChange={ (e, data) => { this.setState({ project: data.value }) }}
+                                          value={ this.state.projects }
+                                          options={
+                                              this.state.preparedProjects.map(({ _id, name }) => ({
+                                                  value: _id, text: name
+                                              }))
+                                          }
+                                          onChange={ (e, data) => { this.setState({ projects: data.value }) }}
                                           onSearchChange={ (e, value) => { this.setState({ projectSearch: value }) } }
                                           onKeyDown={ this.onAddNewProjectItem } />
                             </Form.Field>
                             <Form.Field>
-                                <label>Projects</label>
-                                <div className={this.state.projects.length > 3 ? 'table-body-projects' : ''}>
+                                <label>Projects History</label>
+                                <div className={this.state.projectsHistory.length > 10 ? 'table-body-projects' : ''}>
                                     <Table singleLine
                                            compact
                                            fixed

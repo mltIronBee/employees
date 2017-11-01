@@ -111,3 +111,21 @@ header i {
   height: 100px;
   overflow-y: scroll;
 }
+
+.header-top {
+  display: flex;
+  justify-content: center;
+}
+
+.header-top-admin {
+  justify-content: space-between;
+  display: flex;
+}
+
+.header-title {
+  margin-left: -100px;
+}
+
+.header-admin-menu {
+  border-right: none!important;
+}

@@ -23,7 +23,7 @@ export const Home = (props) => (
                           selection
                           scrolling
                           options={ props.prepareOptionForFirstAndLastName() }
-                          placeholder='Searched first name'
+                          placeholder='Search first/last name'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
             <Grid.Column width={4} floated="right">
@@ -33,7 +33,7 @@ export const Home = (props) => (
                           selection
                           scrolling
                           options={ props.prepareOptionsForSearch('project') }
-                          placeholder='Searched project'
+                          placeholder='Search project'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>
             <Grid.Column width={4} floated="right">

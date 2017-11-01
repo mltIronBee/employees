@@ -3,7 +3,7 @@ import { Popup, Grid, List, Image } from 'semantic-ui-react';
 
 const defaultImageSrc = 'http://lazyadmin.nl/wp-content/plugins/all-in-one-seo-pack/images/default-user-image.png';
 
-export const UserPopup = ({ user, trigger }) => (
+export const UserPopup = ({ user, trigger, projects }) => (
     <Popup trigger={ trigger }
            className="user-popup custom-scroll"
            flowing
@@ -28,7 +28,7 @@ export const UserPopup = ({ user, trigger }) => (
                     </List.Item>
                     <List.Item>
                         <List.Icon name="industry"/>
-                        <List.Content>{ user.project }</List.Content>
+                        <List.Content>{ projects }</List.Content>
                     </List.Item>
                     <List.Item>
                         <List.Icon name="calendar"/>
@@ -37,7 +37,7 @@ export const UserPopup = ({ user, trigger }) => (
                 </List>
             </Grid.Column>
             <Grid.Column width={16}>
-                Skills: { user.skills.join(', ') }
+                Skills: { user.skills && user.skills.join(', ') }
             </Grid.Column>
         </Grid>
     </Popup>

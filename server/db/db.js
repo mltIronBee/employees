@@ -28,12 +28,25 @@ export const getAllUsers = adminLogin =>
     User
         .find()
         .populate('employees')
+        .exec()
         .then(users =>
-            users.filter(user => {
+            Promise.all([
+                users,
+                Promise.all(
+                    users.map(user =>
+                        Employee.populate(user.employees, { path: 'projects', model: 'Project' }))
+                )
+            ])
+        )
+        .then(([ users, userEmployees ]) => {
+            users.map((user, index) =>
+                Object.assign({}, user.toObject(), { employees: userEmployees[index] }));
+
+            return users.filter(user => {
                 delete user.password;
-                return user.login !== adminLogin;
+                return user.login !== adminLogin
             })
-        );
+        });
 
 export const createUser = data =>
     (new User(data)).save();
@@ -51,42 +64,50 @@ export const createEmployee = (data, login) =>
             return Promise.all([employee, user.save()])
         });
 
-export const getAllEmployees = login =>
-    findByLogin(login)
+export const getAllEmployees = login => {
+    return findByLogin(login)
         .populate('employees')
-        .then(user => user.employees);
+        .exec()
+        .then(user => Employee.populate(user.employees, { path: 'projects', model: 'Project' }))
+};
 
 export const getSkillsPositionsProjects = () => {
     return Promise.all([getAllSkillsAndPositionsFromEmployees(), getAllProjects()])
-        .then(([ result , projects]) => {
-            let preparedSkills = [], preparedPositions = [];
-            const preparedProjects = projects.map(project => project.name);
+        .then(([ skillsAndPositions, projects ]) => {
+            const reduced = skillsAndPositions
+                .reduce((acc, { skills, position }) => {
+                    acc.skills = [...acc.skills, ...skills];
+                    if (!acc.positions.includes(position))
+                        acc.positions.push(position);
 
-            result.forEach(item => {
-                preparedSkills = [...preparedSkills, ...item.skills];
-                preparedPositions.push(item.position);
+                    return acc;
+                }, { skills: [], positions: [] });
+
+            return Object.assign(reduced, {
+                projects,
+                skills: reduced.skills.filter(
+                    (x, idx, arr) => arr.indexOf(x) === idx
+                )
             });
-
-            preparedSkills = preparedSkills.filter(uniqueFilter);
-            preparedPositions = preparedPositions.filter(uniqueFilter);
-
-            return [preparedSkills, preparedPositions, preparedProjects]
         });
 };
-
-const uniqueFilter = (item, index, arr) => arr.indexOf(item) === index;
 
 const getAllSkillsAndPositionsFromEmployees = () =>
     Employee.find().select('skills position').exec();
 
 export const getEmployeeById = id =>
     getSkillsPositionsProjects()
-        .then(([skills, positions, projects]) =>
-            Promise.all([Employee.findById(id), skills, positions, projects])
+        .then(data =>
+            Promise.all([Employee.findById(id).populate('projects projectsHistory'), data])
+        )
+        .then(([ employee, data ]) =>
+            Object.assign({}, data, { employee })
         );
 
 export const updateEmployeeData = (id, data) =>
-    Employee.findByIdAndUpdate(id, { $set: data });
+    Employee.findByIdAndUpdate(id, {
+        $set: data
+    });
 
 export const deleteEmployee = id =>
     Employee.findByIdAndRemove(id);

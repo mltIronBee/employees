@@ -6,7 +6,8 @@ export const EmployeesTable = (props) => (
     <Grid style={ props.containerStyles }>
         <DeleteEmployeeModal isModalOpened={ props.isModalOpened }
                              onModalClose={ props.onModalClose }
-                             onEmployeeDelete={ props.onEmployeeDelete } />
+                             onDelete={ props.onEmployeeDelete }
+                             entity={ props.entity }/>
         <Grid.Column width={16}>
             <Table singleLine
                    color="blue"
