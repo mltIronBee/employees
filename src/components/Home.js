@@ -29,10 +29,11 @@ export const Home = (props) => (
             <Grid.Column width={4} floated="right">
                 <Dropdown fluid
                           search
-                          dataKey='project'
+                          multiple
+                          dataKey='projects'
                           selection
                           scrolling
-                          options={ props.prepareOptionsForSearch('project') }
+                          options={ props.prepareProjectsForSearch() }
                           placeholder='Search project'
                           onChange={ props.dropdownOnChange } />
             </Grid.Column>

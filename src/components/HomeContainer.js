@@ -21,7 +21,7 @@ export class HomeContainer extends Component {
         filteredUsers: [],
         firstName: '',
         lastName: '',
-        project: '',
+        projects: [],
         skills: [],
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
     };
@@ -145,6 +145,26 @@ export class HomeContainer extends Component {
         return options;
     };
 
+    prepareProjectsForSearch = () => {
+        const options = [];
+        let key = 0;
+        this.state.employees.forEach(employee => {
+            (employee.projects && employee.projects.length) &&
+            employee.projects.forEach(project => {
+                if(!this.hasItem(options, project)) {
+                    options.push({
+                        text: project.name,
+                        value: project.name,
+                        key
+                    });
+                    key++
+                }
+            });
+        });
+
+        return options;
+    };
+
     prepareOptionsForSearch = key => {
         const options = [{
             text: 'selected none',
@@ -217,16 +237,20 @@ export class HomeContainer extends Component {
 
     filterTable = () => {
         const filtered = this.state.employees
-            .filter(employee => this.filterSkills(employee)
-                && this.filtredByAnotherCriteria('project', employee)
+            .filter(employee => this.filterSkillsProjects(employee)
+                && this.filterProjects(employee)
                 && this.filtredByAnotherCriteria('firstName', employee)
                 && this.filtredByAnotherCriteria('lastName', employee));
 
         this.setState({ filtered })
     };
 
-    filterSkills = employee => {
+    filterSkillsProjects = employee => {
         return !this.state.skills.find(skill => !employee.skills.includes(skill));
+    };
+
+    filterProjects = employees => {
+        return !this.state.projects.find(project => !employees.projects.some(item => item.name === project))
     };
 
     filtredByAnotherCriteria = (criteria, employee) => {
@@ -420,11 +444,13 @@ export class HomeContainer extends Component {
                      onSearchUsers={ this.onFilterUsers }
                      dropdownOnChange={ this.dropdownOnChange }
                      prepareOptionsForSearch={ this.prepareOptionsForSearch }
-                     prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }/>
+                     prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }
+                     prepareProjectsForSearch={ this.prepareProjectsForSearch }/>
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                     prepareOptionsForSearch={ this.prepareOptionsForSearch }
                     dropdownOnChange={ this.dropdownOnChange }
-                    prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }/>
+                    prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }
+                    prepareProjectsForSearch={ this.prepareProjectsForSearch }/>
     }
 }
