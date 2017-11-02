@@ -3,9 +3,11 @@ import { Link } from 'react-router';
 import { Grid, Button, Dropdown } from 'semantic-ui-react';
 import { EmployeesTable } from './EmployeesTable';
 import { SearchDropdown } from './SearchDropdown';
+import { LoaderComponent } from './Loader';
 
 export const Home = (props) => (
     <Grid container>
+        <LoaderComponent loaderActive={ props.loaderActive }/>
         <Grid.Row>
             <Grid.Column floated="right">
                 <Link to="profile/create">

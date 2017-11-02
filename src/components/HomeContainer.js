@@ -14,8 +14,8 @@ export class HomeContainer extends Component {
         employees: [],
         filtered: [],
         currentPage: 0,
+        user: null,
         users: [],
-        isAdmin: false,
         isModalOpened: false,
         currentEmployeeId: '',
         filteredUsers: [],
@@ -23,6 +23,7 @@ export class HomeContainer extends Component {
         lastName: '',
         projects: [],
         skills: [],
+        loaderActive: false,
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
     };
 
@@ -61,27 +62,40 @@ export class HomeContainer extends Component {
         }
     ];
 
-    initializeUser = () => {
-        if (this.props.isAdmin) {
-            return http.get(`${apiPrefix}/admin`)
-                .then(({ data: users }) => {
-                    this.setState({
-                        users,
-                        isAdmin: true
-                    });
-                });
-        } else {
-            return http.get(`${apiPrefix}/employees`)
-                .then(({ data }) => {
-                    this.setState({ employees: this.formatEmployeesDate(data) })
-                });
-        }
+    componentWillMount() {
+        this.checkUserAndLoadData(this.props.user);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.checkUserAndLoadData(nextProps.user);
+        document.addEventListener('keyup', this.onModalActions);
     };
 
-    componentDidMount() {
-        this.initializeUser();
-        document.addEventListener('keyup', this.onModalActions)
-    }
+    checkUserAndLoadData = user => {
+        if (user) {
+            if (user.isAdmin) {
+                if (!this.state.users.length) {
+                    http.get(`${apiPrefix}/admin`)
+                        .then(({ data: users }) => {
+                            this.setState({
+                                users,
+                                user,
+                                loaderActive: false
+                            });
+                        });
+                } else this.setState({loaderActive: false});
+
+            } else if (!this.state.employees.length) {
+                http.get(`${apiPrefix}/employees`)
+                    .then(({ data }) => {
+                        this.setState({
+                            employees: this.formatEmployeesDate(data),
+                            loaderActive: false
+                        })
+                    });
+            } else this.setState({loaderActive: false});
+        } else this.setState({loaderActive: true});
+    };
 
     componentWillUnmount() {
         document.removeEventListener('keyup', this.onModalActions);
@@ -98,8 +112,8 @@ export class HomeContainer extends Component {
     onEmployeeDelete = (id) => {
         http.post(`${apiPrefix}/employee/delete`, { id })
             .then(res => {
-                if(this.state.isAdmin) {
-                    this.setState((prevState) => ({
+                if(this.state.user && this.state.user.isAdmin) {
+                    this.setState(prevState => ({
                         users: prevState.users.map(user => {
                             user.employees = user.employees.filter(employee => employee._id !== id);
                             return user;
@@ -117,9 +131,8 @@ export class HomeContainer extends Component {
             .catch(console.log)
     };
 
-    formatEmployeesDate = (employees) => employees.map(employee => {
+    formatEmployeesDate = employees => employees.map(employee => {
          employee.startedAt = moment(employee.startedAt).format('YYYY-MM-DD');
-
          return employee;
     });
 
@@ -446,7 +459,7 @@ export class HomeContainer extends Component {
     };
 
     render() {
-        return this.state.isAdmin
+        return this.state.user && this.state.user.isAdmin
             ? <Admin getEmployeesTableProps={ this.getEmployeesTableProps }
                      getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                      users={ this.state.filteredUsers.length ? this.state.filteredUsers : this.state.users }
@@ -455,12 +468,14 @@ export class HomeContainer extends Component {
                      dropdownOnChange={ this.dropdownOnChange }
                      prepareOptionsForSearch={ this.prepareOptionsForSearch }
                      prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }
-                     prepareProjectsForSearch={ this.prepareProjectsForSearch }/>
+                     prepareProjectsForSearch={ this.prepareProjectsForSearch }
+                     loaderActive={ this.state.loaderActive }/>
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                     prepareOptionsForSearch={ this.prepareOptionsForSearch }
                     dropdownOnChange={ this.dropdownOnChange }
                     prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }
-                    prepareProjectsForSearch={ this.prepareProjectsForSearch }/>
+                    prepareProjectsForSearch={ this.prepareProjectsForSearch }
+                    loaderActive={ this.state.loaderActive }/>
     }
 }

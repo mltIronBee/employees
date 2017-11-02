@@ -3,9 +3,11 @@ import { Grid, Segment, Input, Dropdown } from 'semantic-ui-react';
 import { EmployeesTable } from './EmployeesTable';
 import { SearchDropdown } from './SearchDropdown';
 import { UserList } from './UserList';
+import { LoaderComponent } from './Loader';
 
-export const Admin = (props) => (
+export const Admin = props => (
     <Grid container>
+        <LoaderComponent loaderActive={ props.loaderActive }/>
         <Grid.Row style={{ marginTop: '50px' }}>
             <Grid.Column width={5} floated="left" style={{ marginRight: '15px' }}>
                 <Input icon={{name: 'search'}}

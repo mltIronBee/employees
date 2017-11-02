@@ -8,20 +8,20 @@ import './Main.css';
 
 class App extends Component {
     state = {
-        isAdmin: false,
+        user: null,
         activeItem: 'Employees'
     };
 
-    componentDidMount() {
+    componentWillMount() {
         this.initializeUser();
     }
 
     initializeUser = () => {
         const key = localStorage.getItem('Authorization');
-        if(key) {
+        if (key) {
             setAuthHeader(key);
             http.get(`${apiPrefix}/login`)
-                .then(({ data: user }) => this.setState({ isAdmin: user.isAdmin }))
+                .then(({ data: user }) => this.setState({ user }))
                 .catch(err => {
                     localStorage.removeItem('Authorization');
                     browserHistory.push('/login');
@@ -59,6 +59,7 @@ class App extends Component {
                           size="large"
                           link
                           onClick={() => {
+                              this.setUser(null);
                               localStorage.removeItem('Authorization');
                               browserHistory.push('/login');
                           }} />
@@ -81,20 +82,20 @@ class App extends Component {
     };
 
     checkIsAdmin = () => {
-        return this.state.isAdmin && this.checkCurrentStateNotLoginAndRegister()
+        return this.state.user && this.state.user.isAdmin && this.checkCurrentStateNotLoginAndRegister()
     };
 
-    setAdmin  = isAdmin => this.setState({ isAdmin });
+    setUser  = user => this.setState({ user });
 
     mapChildren = () => {
         const children = React.Children.map(this.props.children, child => React.cloneElement(child,
-            { setAdmin: this.setAdmin, isAdmin: this.state.isAdmin }));
+            { setUser: this.setUser, user: this.state.user }));
 
         return <div>{children}</div>
     };
 
     componentWillUnmount() {
-        this.setAdmin(false);
+        this.setUser(null);
     }
 
     render() {

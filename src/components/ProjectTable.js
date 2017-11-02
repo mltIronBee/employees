@@ -5,11 +5,13 @@ import { Link } from 'react-router';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
+import { LoaderComponent } from './Loader';
 
 export class ProjectTable extends Component {
     state = {
         projects: [],
         isModalOpened: false,
+        loaderActive: false,
         currentProjectId: '',
         currentPage: 0,
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
@@ -52,17 +54,26 @@ export class ProjectTable extends Component {
 
 
     componentDidMount() {
-        this.props.isAdmin && this.initializeData();
+        this.checkUserAndGetData(this.props.user);
         document.addEventListener('keyup', this.onModalActions)
     }
 
     componentWillReceiveProps(nextProps) {
-        nextProps.isAdmin && this.initializeData();
+        this.checkUserAndGetData(nextProps.user);
     }
+
+    checkUserAndGetData = user => {
+        user
+            ? !this.state.projects.length ? this.initializeData() : this.setState({ loaderActive: false })
+            : this.setState({ loaderActive: true });
+    };
 
     initializeData = () => {
         return http.get(`${apiPrefix}/projects`)
-                .then(({data}) => this.setState({ projects: data }))
+                .then(({data}) => this.setState({
+                    projects: data,
+                    loaderActive: false
+                }))
                 .catch(console.log)
     };
 
@@ -236,6 +247,7 @@ export class ProjectTable extends Component {
 
     render() {
         return <Grid container>
+            <LoaderComponent loaderActive={ this.state.loaderActive }/>
             <Grid.Row>
                 <Grid.Column width={6} floated='right'>
                     <Link to="project/create">

@@ -58,7 +58,7 @@ export class Auth extends Component {
         http.get(`${apiPrefix}/login`)
             .then(({ data }) => {
                 localStorage.setItem('Authorization', key);
-                this.props.setAdmin(data.isAdmin);
+                this.props.setUser(data);
                 browserHistory.push('/');
             })
             .catch(err => {
@@ -87,7 +87,7 @@ export class Auth extends Component {
             .then(({ data: user }) => {
                 const key = basic(user.login, user.password);
                 localStorage.setItem('Authorization', key);
-                this.props.setAdmin(false);
+                this.props.setUser(user);
                 browserHistory.push('/');
             })
             .catch(err => {
