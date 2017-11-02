@@ -106,7 +106,17 @@ export const getEmployeeById = id =>
 
 export const updateEmployeeData = (id, data) =>
     Employee.findByIdAndUpdate(id, {
-        $set: data
+        $set: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            position: data.position,
+            startedAt: data.startedAt,
+            readyForTransition: data.readyForTransition,
+            image: data.image,
+            skills: data.skills,
+            projects: data.projects || [],
+            projectsHistory: data.projectsHistory || []
+        }
     });
 
 export const deleteEmployee = id =>
