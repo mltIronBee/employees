@@ -113,7 +113,7 @@ export const updateEmployeeData = (id, data) =>
             startedAt: data.startedAt,
             readyForTransition: data.readyForTransition,
             image: data.image,
-            skills: data.skills,
+            skills: data.skills || [],
             projects: data.projects || [],
             projectsHistory: data.projectsHistory || []
         }
