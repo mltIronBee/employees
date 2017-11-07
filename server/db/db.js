@@ -134,5 +134,22 @@ export const deleteProject = id =>
 export const getAllProjects = () =>
     Project.find();
 
+export const getProjectsWithEmployees = () =>
+    Project.aggregate([
+        {
+            $lookup: { from: 'employees', localField: '_id', foreignField: 'projects', as: 'employees' }
+        }
+    ]);
+
+export const getEmployeesForProject = projectId =>
+    Employee.find( { projects: { $nin: [ projectId ] } } ).exec();
+
 export const getProjectById = id =>
-    Project.findById(id);
+    Project.aggregate([
+        { $match: { _id: mongoose.Types.ObjectId(id) }},
+        { $lookup: { from: 'employees', localField: '_id', foreignField: 'projects', as: 'employees' } }
+    ]).exec();
+
+export const getProjectByIdWithEmployees = projectId =>
+    Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
+        .then(([ project, allEmployees ]) => ({ project: project[0] || {}, allEmployees }));

@@ -129,3 +129,23 @@ header i {
 .header-admin-menu {
   border-right: none!important;
 }
+
+.top-menu-project {
+  height: 40px;
+  margin-bottom: 15px;
+}
+
+.add-employee-button {
+  cursor: pointer;
+}
+
+.add-employee-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.add-employee-popup {
+  width: 40%;
+  max-width: 40%;
+  max-height: 250px;
+}

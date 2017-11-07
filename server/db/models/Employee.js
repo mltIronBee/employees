@@ -43,4 +43,4 @@ const EmployeeSchema = new Schema({
     }]
 });
 
-export const Employee = mongoose.model('Employee', EmployeeSchema);
+export const Employee = mongoose.model('Employee', EmployeeSchema, 'employees');

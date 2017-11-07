@@ -165,13 +165,13 @@ apiRoutes.post('/employee/delete', requiredAuthMiddleware, (req, res) => {
 });
 
 apiRoutes.get('/projects', requiredAuthMiddleware, (req, res) => {
-   db.getAllProjects()
+   db.getProjectsWithEmployees()
        .then(result => res.send(result))
        .catch(err => res.status(400).send(err))
 });
 
 apiRoutes.get('/project', requiredAuthMiddleware, (req, res) => {
-    db.getProjectById(req.query._id)
+    db.getProjectByIdWithEmployees(req.query._id)
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))
 });

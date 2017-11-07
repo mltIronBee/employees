@@ -33,4 +33,4 @@ ProjectSchema.pre('remove', next => {
         .then(() => next())
 });
 
-export const Project = mongoose.model('Project', ProjectSchema);
+export const Project = mongoose.model('Project', ProjectSchema, 'projects');
