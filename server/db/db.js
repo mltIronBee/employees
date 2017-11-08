@@ -135,21 +135,46 @@ export const getAllProjects = () =>
     Project.find();
 
 export const getProjectsWithEmployees = () =>
-    Project.aggregate([
-        {
-            $lookup: { from: 'employees', localField: '_id', foreignField: 'projects', as: 'employees' }
-        }
-    ]);
+    Project.find()
+        .lean()
+        .exec()
+        .then(projects => {
+            const projectsEmployeesQuery = [];
+            projects.forEach(project => {
+                const employees = Employee.find({ projects: project._id }).exec();
+                projectsEmployeesQuery.push(Promise.all([project, employees]))
+            });
+
+            return Promise.all(projectsEmployeesQuery);
+        })
+        .then(result => {
+            const projectsWithEmployees = [];
+            result.forEach(([ project, employees ]) => {
+                project.employees = employees;
+                projectsWithEmployees.push(project);
+            });
+
+            return projectsWithEmployees
+        })
+        .catch(console.log);
 
 export const getEmployeesForProject = projectId =>
     Employee.find( { projects: { $nin: [ projectId ] } } ).exec();
 
 export const getProjectById = id =>
-    Project.aggregate([
-        { $match: { _id: mongoose.Types.ObjectId(id) }},
-        { $lookup: { from: 'employees', localField: '_id', foreignField: 'projects', as: 'employees' } }
-    ]).exec();
+    Project.findById(id)
+        .lean()
+        .exec()
+        .then(project => {
+            const employees = Employee.find({ projects:  project._id}).exec();
+            return Promise.all([ project, employees ])
+        })
+        .then(([ project, employees ]) => {
+            project.employees = employees;
+            return project
+        })
+        .catch(console.log);
 
 export const getProjectByIdWithEmployees = projectId =>
     Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
-        .then(([ project, allEmployees ]) => ({ project: project[0] || {}, allEmployees }));
+        .then(([ project, allEmployees ]) => ({ project, allEmployees }));
