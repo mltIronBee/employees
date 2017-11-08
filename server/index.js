@@ -171,7 +171,10 @@ apiRoutes.get('/projects', requiredAuthMiddleware, (req, res) => {
 });
 
 apiRoutes.get('/project', requiredAuthMiddleware, (req, res) => {
-    db.getProjectByIdWithEmployees(req.query._id)
+    const query = req.query && req.query._id
+        ? db.getProjectByIdWithEmployees(req.query._id)
+        : db.getAllEmployeesForProject();
+    query
         .then(result => res.send(result))
         .catch(err => res.status(400).send(err))
 });

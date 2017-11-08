@@ -24,18 +24,24 @@ export class Project extends Component {
 
     componentDidMount() {
         this.props.params.method === 'create'
-            ? this.setState({ isCreating: true })
-            : this.getProject();
+            ? this.getDataForProjectCreation()
+            : this.getProjectById();
         document.addEventListener('keyup', this.onModalActions)
     }
 
     onModalActions = ({which}) => {
         which === 13 && this.state.isModalOpened
-            ? this.employeeDelete()
+            ? this.employeeDeleteFromTable()
             : (which === 27 && this.state.isModalOpened) && this.setState({ isModalOpened: false });
     };
 
-    getProject = () => {
+    getDataForProjectCreation = () => {
+        return http.get(`${apiPrefix}/project`)
+            .then(({data}) => this.setState({ isCreating: true, allEmployees: data }))
+            .catch(console.log)
+    };
+
+    getProjectById = () => {
         const params = { _id: this.props.location.query.id };
 
         return http.get(`${apiPrefix}/project`, { params })
@@ -92,30 +98,32 @@ export class Project extends Component {
             key: index
         }));
 
-    addEmployees = employeesForAdding => {
-        employeesForAdding.forEach(id => {
-            const elem = this.state.allEmployees.find(employee => employee._id === id);
-            elem.projects.push(this.state.id);
-            elem.projectsHistory[elem.projectsHistory.length - 1] !== this.state.id
-                && elem.projectsHistory.push(this.state.id);
-        });
+    addEmployeesToTable = employees => {
+        const filtredEmployees = this.state.allEmployees
+            .filter(employee => !employees.includes(employee._id));
 
-        console.log( this.state.allEmployees);
+        const employeesForAdding = employees
+            .map(id => this.state.allEmployees.find(employee => employee._id === id));
 
-        const addingEmployees = this.state.allEmployees
-            .filter(employee => employeesForAdding.includes(employee._id));
+        this.setState(prevState => ({
+            allEmployees: filtredEmployees,
+            projectEmployees: [...prevState.projectEmployees, ...employeesForAdding]
+        }));
+    };
 
-        const employeesQuery = [];
-        addingEmployees.forEach(item => employeesQuery.push(this.updateEmployeeQuery(item)));
+    addEmployees = projectId => {
+        const employeesForAdding = this.state.projectEmployees
+            .filter(employee => !employee.projects.includes(projectId))
+            .map(employee => {
+                employee.projects.push(projectId);
+                employee.projectsHistory[employee.projectsHistory.length - 1] !== projectId
+                && employee.projectsHistory.push(projectId);
 
-        Promise.all(employeesQuery)
-            .then(res => {
-                console.log(res);
-                this.setState(prevState => ({
-                    projectEmployees: [...prevState.projectEmployees, ...addingEmployees]
-                }));
+                return employee
             })
-            .catch(console.log);
+            .map(employee => this.updateEmployeeQuery(employee));
+
+        return Promise.all(employeesForAdding)
     };
 
     updateEmployeeQuery = employee => {
@@ -140,17 +148,28 @@ export class Project extends Component {
 
     onModalClose = () => this.setState({ isModalOpened: false });
 
-    employeeDelete = () => {
-        const employee = this.state.projectEmployees.find(employee => employee._id === this.state.currentEmployeeId);
-        employee.projects = employee.projects.filter(project => project !== this.state.id);
-        this.updateEmployeeQuery(employee)
-            .then(res => {
-                this.setState(prevState => ({
-                    projectEmployees: prevState.projectEmployees.filter(item => item._id !== employee._id),
-                    isModalOpened: false
-                }))
-            })
-            .catch(console.log)
+    employeeDeleteFromTable = () => {
+        this.setState(prevState => ({
+            projectEmployees: prevState.projectEmployees
+                .filter(employee => employee._id !== prevState.currentEmployeeId),
+            allEmployees: [ ...prevState.allEmployees, prevState.projectEmployees
+                .find(employee => employee._id === prevState.currentEmployeeId)],
+            isModalOpened: false
+        }))
+    };
+
+    deleteEmployeesFromProject = projectId => {
+        const alreadyAddedEmployees = this.state.allEmployees
+            .filter(employee => employee.projects.includes(projectId));
+        alreadyAddedEmployees.length &&
+        alreadyAddedEmployees
+            .map(employee => {
+                employee.projects = employee.projects
+                    .filter(project => project !== projectId);
+                return this.updateEmployeeQuery(employee)
+            });
+
+        return Promise.all(alreadyAddedEmployees);
     };
 
     saveData = e => {
@@ -164,6 +183,11 @@ export class Project extends Component {
         if (!isCreating) obj._id = id;
 
         http.post(requestUrl, obj)
+            .then(({data}) =>
+                Promise.all([
+                    this.addEmployees(data._id),
+                    this.deleteEmployeesFromProject(data._id)
+                ]))
             .then(result => {
                 this.notification.show('Data is updated');
                 browserHistory.push('/projects');
@@ -183,7 +207,7 @@ export class Project extends Component {
             <Grid container centered columns={2}>
                 <DeleteEmployeeModal isModalOpened={ this.state.isModalOpened }
                                      onModalClose={ this.onModalClose }
-                                     onDelete={ this.employeeDelete }
+                                     onDelete={ this.employeeDeleteFromTable }
                                      entity='employee from project'/>
                 <Notification ref={ node => { this.notification = node } }/>
                 <Grid.Column textAlign='left'>
@@ -215,7 +239,7 @@ export class Project extends Component {
                                 <span className='add-employee-row' style={{marginBottom: '10px'}}>
                                     <AddEmployeePopup
                                         employees={ this.preparedEmployees() }
-                                        addEmployees={ this.addEmployees }
+                                        addEmployeesToTable={ this.addEmployeesToTable }
                                         popupIsOpen={ this.state.popupIsOpen }
                                         setPopupState={ this.setPopupState }
                                         trigger={

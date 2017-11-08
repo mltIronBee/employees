@@ -178,3 +178,6 @@ export const getProjectById = id =>
 export const getProjectByIdWithEmployees = projectId =>
     Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
         .then(([ project, allEmployees ]) => ({ project, allEmployees }));
+
+export const getAllEmployeesForProject = () =>
+    Employee.find().lean().exec();

@@ -11,7 +11,7 @@ export class AddEmployeePopup extends Component {
     };
 
     addEmployeesToTable = () => {
-        this.props.addEmployees(this.state.selectedEmployees);
+        this.props.addEmployeesToTable(this.state.selectedEmployees);
     };
 
     close = e => {
