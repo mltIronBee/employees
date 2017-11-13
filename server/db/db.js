@@ -183,13 +183,3 @@ export const getProjectByIdWithEmployees = projectId =>
 export const getAllEmployeesForProject = () =>
     Employee.find().lean().exec();
 
-(function () {
-    Employee
-        .find()
-        .then(employees => {
-            employees.forEach(employee => {
-                employee.available = !employee.projects.length;
-                employee.save();
-            })
-        });
-})();
