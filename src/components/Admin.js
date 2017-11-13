@@ -40,7 +40,7 @@ export const Admin = props => (
             </Grid.Column>
         </Grid.Row>
         <Grid.Row>
-            <Grid.Column width={4}>
+            <Grid.Column width={3}>
                 <Segment color="blue"
                          className="custom-scroll"
                          style={{ maxHeight: '473px', overflowY: 'scroll' }} >
@@ -48,7 +48,7 @@ export const Admin = props => (
                               onUserClick={ props.onUserClick } />
                 </Segment>
             </Grid.Column>
-            <Grid.Column width={12}>
+            <Grid.Column width={13}>
                 <EmployeesTable { ...props.getEmployeesTableProps() } />
             </Grid.Column>
         </Grid.Row>

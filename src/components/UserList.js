@@ -32,7 +32,7 @@ export class UserList extends Component {
                   className='user-list'
                   animated
                   verticalAlign="middle"
-                  size="big"
+                  size="medium"
                   items={ this.prepareUserItems(this.props.users) } />
         );
     }
