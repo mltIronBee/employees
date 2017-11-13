@@ -29,7 +29,8 @@ export class Profile extends Component {
         projectSearch: '',
         skillSearch: '',
         newSkill: '',
-        readyForTransition: false
+        readyForTransition: false,
+        available: false
     };
 
     uploadedImage = null;
@@ -73,9 +74,9 @@ export class Profile extends Component {
                             ? this.prepareProjects(prevState.projects)
                             : this.prepareProjects(employee.projects),
                         projectsHistory: employee.projectsHistory,
-                        readyForTransition: !!employee.readyForTransition
+                        readyForTransition: !!employee.readyForTransition,
+                        available: employee.available
                     }));
-                    //, this.checkProjectsArray
                 })
                 .catch(console.log);
         }
@@ -118,7 +119,8 @@ export class Profile extends Component {
     };
 
     continueSaveData = () => {
-        const { _id, firstName, lastName, position, projects, projectsHistory, startedAt, skills, isCreating, readyForTransition } = this.state;
+        const { _id, firstName, lastName, position, projects, projectsHistory, startedAt, skills, isCreating,
+            readyForTransition, available } = this.state;
         const requestUrl = `${apiPrefix}/employee/${ isCreating ? 'create' : 'update' }`;
 
         if (!firstName) return this.notification.show('First name must be required!', 'danger');
@@ -138,6 +140,8 @@ export class Profile extends Component {
         skills.forEach(skill => data.append('skills[]', skill));
         projects.forEach(project => data.append('projects[]', project));
         projectsHistory.forEach(project => data.append('projectsHistory[]', project));
+        const availableVal = !projects.length ? true : available;
+        data.append('available', availableVal);
 
         if(!isCreating) data.append('_id', _id);
 
@@ -243,7 +247,8 @@ export class Profile extends Component {
         const newProjects = this.compareArrays(this.state.projects, this.state.prevProjects);
         if (newProjects.length && this.state.projects.length)
             this.setState(prevState => ({
-                projectsHistory: [...prevState.projectsHistory.map(project => project._id), ...newProjects]
+                projectsHistory: [...prevState.projectsHistory.map(project => project._id), ...newProjects],
+                available: false
             }), this.continueSaveData);
         else this.setState(prevState => ({
             projectsHistory: prevState.projectsHistory.map(project => project._id)

@@ -273,14 +273,63 @@ export class HomeContainer extends Component {
     };
 
     getClassName = employee => {
-        return !employee.projects.length
+        return employee.available
             ? 'empty-project'
             : employee.readyForTransition
                 ? 'ready-for-transition'
                 : '';
     };
 
-    prepareEmployeesTableData = (array) => {
+    updateEmployeeQuery = employee => {
+        const requestUrl = `${apiPrefix}/employee/update`;
+        const data = new FormData();
+
+        data.append('_id', employee._id);
+        data.append('firstName', employee.firstName);
+        data.append('lastName', employee.lastName);
+        data.append('position', employee.position);
+        data.append('startedAt', employee.startedAt);
+        data.append('readyForTransition', employee.readyForTransition);
+        data.append('image', employee.imageSrc);
+        data.append('available', employee.available);
+        employee.skills.forEach(skill => data.append('skills[]', skill));
+        employee.projects.forEach(project => data.append('projects[]', project));
+        employee.projectsHistory.forEach(project => data.append('projectsHistory[]', project));
+
+        return http.post(requestUrl, data)
+    };
+
+    switchReadyForTransition = employee => {
+        const dataObj = Object.assign({}, employee, { readyForTransition: !employee.readyForTransition});
+
+        this.updateEmployeeQuery(dataObj)
+            .then(res =>
+                this.setState(prevState => ({
+                    employees: prevState.employees.map(item => {
+                        if(item._id === employee._id) item.readyForTransition = dataObj.readyForTransition;
+                        return item
+                    })
+                }))
+            )
+            .catch(console.log)
+    };
+
+    switchAvailableMarker = employee => {
+        const dataObj = Object.assign({}, employee, { available: !employee.available});
+
+        this.updateEmployeeQuery(dataObj)
+            .then(res =>
+                this.setState(prevState => ({
+                    employees: prevState.employees.map(item => {
+                        if(item._id === employee._id) item.available = dataObj.available;
+                        return item
+                    })
+                }))
+            )
+            .catch(console.log)
+    };
+
+    prepareEmployeesTableData = array => {
         if(array.length) {
             return array.map((employee, index) => ({
                 className: this.getClassName(employee),
@@ -289,12 +338,26 @@ export class HomeContainer extends Component {
                 lastName: employee.lastName,
                 projects: this.getStringOfNameProjects(employee.projects),
                 position: employee.position,
+                readyForTransition: (
+                    <Table.Cell key={index + 5} className='ready-for-transition-table'
+                        onClick={e =>
+                        this.switchReadyForTransition(employee)}>
+                        {employee.readyForTransition ? 'Yes' : 'No'}
+                    </Table.Cell>
+                ),
+                available: (
+                    <Table.Cell key={index + 6} className='ready-for-transition-table'
+                        onClick={e =>
+                            this.switchAvailableMarker(employee)}>
+                        {employee.available ? 'Yes' : 'No'}
+                    </Table.Cell>
+                ),
                 startedAt: employee.startedAt,
                 actions: (
-                    <Table.Cell key={ index + 3 }>
+                    <Table.Cell key={ index + 8 }>
                         <UserPopup user={ employee }
                                    projects={this.getStringOfNameProjects(employee.projects)}
-                                   key={ index + 2 }
+                                   key={ index + 9 }
                                    trigger={
                                        <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
                                            <Icon name="search"
@@ -319,7 +382,8 @@ export class HomeContainer extends Component {
 
     getStringOfNameProjects = projects => projects.map(project => project.name).join(', ');
 
-    renderEmployeesTable = ({ className, index, firstName, lastName, position, projects, startedAt, actions }) => ({
+    renderEmployeesTable = ({ className, index, firstName, lastName, position,
+                                projects, readyForTransition, available, startedAt, actions }) => ({
         key: index,
         className,
         cells: [
@@ -328,6 +392,8 @@ export class HomeContainer extends Component {
             lastName,
             position,
             projects,
+            readyForTransition,
+            available,
             startedAt,
             actions
         ]
@@ -388,10 +454,11 @@ export class HomeContainer extends Component {
     });
 
     getEmployeesTableProps = () => ({
-        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Project', 'Started At', 'Actions'],
+        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Project', 'Ready for transition', 'Available',
+            'Started At', 'Actions'],
         footerRow: (
             <Table.Row>
-                <Table.HeaderCell colSpan="7">
+                <Table.HeaderCell colSpan="9">
                     <Dropdown placeholder="Per page"
                               selection
                               value={ this.state.fieldsPerPage }

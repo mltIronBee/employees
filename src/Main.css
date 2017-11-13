@@ -82,11 +82,11 @@ header i {
 }
 
 .empty-project {
-  color: #b40100;
+  background: rgba(180, 1, 0, 0.51);
 }
 
 .ready-for-transition {
-  color: #e66000;
+  background: rgba(230, 96, 0, 0.54);
 }
 
 .ready-for-transition-checkbox {
@@ -148,4 +148,8 @@ header i {
   width: 40%;
   max-width: 40%;
   max-height: 250px;
+}
+
+.ready-for-transition-table {
+  cursor: pointer;
 }

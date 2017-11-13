@@ -115,7 +115,8 @@ export const updateEmployeeData = (id, data) =>
             image: data.image,
             skills: data.skills || [],
             projects: data.projects || [],
-            projectsHistory: data.projectsHistory || []
+            projectsHistory: data.projectsHistory || [],
+            available: data.available
         }
     });
 
@@ -181,3 +182,14 @@ export const getProjectByIdWithEmployees = projectId =>
 
 export const getAllEmployeesForProject = () =>
     Employee.find().lean().exec();
+
+(function () {
+    Employee
+        .find()
+        .then(employees => {
+            employees.forEach(employee => {
+                employee.available = !employee.projects.length;
+                employee.save();
+            })
+        });
+})();

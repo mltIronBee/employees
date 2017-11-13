@@ -40,7 +40,11 @@ const EmployeeSchema = new Schema({
     projectsHistory: [{
         type: Schema.Types.ObjectId,
         ref: 'Project'
-    }]
+    }],
+
+    available: {
+        type: Boolean
+    }
 });
 
 export const Employee = mongoose.model('Employee', EmployeeSchema, 'employees');
