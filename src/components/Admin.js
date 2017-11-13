@@ -6,7 +6,7 @@ import { UserList } from './UserList';
 import { LoaderComponent } from './Loader';
 
 export const Admin = props => (
-    <Grid container>
+    <Grid style={{marginLeft: '20px', marginRight: '20px'}}>
         <LoaderComponent loaderActive={ props.loaderActive }/>
         <Grid.Row style={{ marginTop: '50px' }}>
             <Grid.Column width={5} floated="left" style={{ marginRight: '15px' }}>
@@ -40,7 +40,7 @@ export const Admin = props => (
             </Grid.Column>
         </Grid.Row>
         <Grid.Row>
-            <Grid.Column width={5}>
+            <Grid.Column width={4}>
                 <Segment color="blue"
                          className="custom-scroll"
                          style={{ maxHeight: '473px', overflowY: 'scroll' }} >
@@ -48,7 +48,7 @@ export const Admin = props => (
                               onUserClick={ props.onUserClick } />
                 </Segment>
             </Grid.Column>
-            <Grid.Column width={11}>
+            <Grid.Column width={12}>
                 <EmployeesTable { ...props.getEmployeesTableProps() } />
             </Grid.Column>
         </Grid.Row>

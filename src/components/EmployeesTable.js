@@ -2,8 +2,8 @@ import React from 'react';
 import { Grid, Table } from 'semantic-ui-react';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
 
-export const EmployeesTable = (props) => (
-    <Grid style={ props.containerStyles }>
+export const EmployeesTable = props => (
+    <Grid style={ props.containerStyles } className='employee-table'>
         <DeleteEmployeeModal isModalOpened={ props.isModalOpened }
                              onModalClose={ props.onModalClose }
                              onDelete={ props.onEmployeeDelete }

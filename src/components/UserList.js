@@ -29,6 +29,7 @@ export class UserList extends Component {
     render() {
         return (
             <List divided
+                  className='user-list'
                   animated
                   verticalAlign="middle"
                   size="big"

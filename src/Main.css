@@ -153,3 +153,9 @@ header i {
 .ready-for-transition-table {
   cursor: pointer;
 }
+
+@media (max-width: 1200px)  {
+    .employee-table {
+        font-size: .8em;
+    }
+}
