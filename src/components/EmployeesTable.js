@@ -10,6 +10,7 @@ export const EmployeesTable = props => (
                              entity={ props.entity }/>
         <Grid.Column width={16}>
             <Table singleLine
+                   sortable
                    color="blue"
                    headerRow={ props.headerRow }
                    footerRow={ props.footerRow }

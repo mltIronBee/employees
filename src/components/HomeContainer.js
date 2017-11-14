@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import moment from 'moment';
+import _ from 'lodash';
 import { browserHistory, Link } from 'react-router';
 import { Table, Icon, Menu, Dropdown, Checkbox } from 'semantic-ui-react';
 import http from '../helpers/http';
@@ -24,7 +25,9 @@ export class HomeContainer extends Component {
         projects: [],
         skills: [],
         loaderActive: false,
-        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
+        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10,
+        column: '',
+        direction: ''
     };
 
     dropdownOptions = [
@@ -455,9 +458,64 @@ export class HomeContainer extends Component {
         onDropdownChange: this.dropdownOnChange
     });
 
+    handleSort = clickedColumn => {
+        const { column, employees, direction } = this.state;
+
+        if (column !== clickedColumn) {
+            this.setState({
+                column: clickedColumn,
+                employees: _.sortBy(employees, [clickedColumn]),
+                direction: 'ascending',
+            });
+            return
+        }
+
+        this.setState({
+            employees: employees.reverse(),
+            direction: direction === 'ascending' ? 'descending' : 'ascending',
+        })
+    };
+
     getEmployeesTableProps = () => ({
-        headerRow: ['#', 'First Name', 'Last Name', 'Position', 'Project', 'Ready for transition', 'Available',
-            'Started At', 'Actions'],
+        headerRow: (
+            <Table.Row>
+                <Table.HeaderCell>#</Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'firstName' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('firstName')}>
+                    First Name
+                </Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'lastName' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('lastName')}>
+                    Last Name
+                </Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'position' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('position')}>
+                    Position
+                </Table.HeaderCell>
+                <Table.HeaderCell>
+                    Project
+                </Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'readyForTransition' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('readyForTransition')}>
+                    Ready for transition
+                </Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'available' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('available')}>
+                    Available
+                </Table.HeaderCell>
+                <Table.HeaderCell
+                    sorted={this.state.column === 'startedAt' ? this.state.direction : null}
+                    onClick={ e => this.handleSort('startedAt')}>
+                    Started At
+                </Table.HeaderCell>
+                <Table.HeaderCell>Actions</Table.HeaderCell>
+            </Table.Row>
+        ),
         footerRow: (
             <Table.Row>
                 <Table.HeaderCell colSpan="9">
