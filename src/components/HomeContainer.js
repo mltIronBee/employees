@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 import { browserHistory, Link } from 'react-router';
-import { Table, Icon, Menu, Dropdown } from 'semantic-ui-react';
+import { Table, Icon, Menu, Dropdown, Checkbox } from 'semantic-ui-react';
 import http from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { Home } from './Home';
@@ -293,7 +293,9 @@ export class HomeContainer extends Component {
         data.append('image', employee.imageSrc);
         data.append('available', employee.available);
         employee.skills.forEach(skill => data.append('skills[]', skill));
-        employee.projects.forEach(project => data.append('projects[]', project));
+        employee.projects
+            .map(project => project._id)
+            .forEach(project => data.append('projects[]', project));
         employee.projectsHistory.forEach(project => data.append('projectsHistory[]', project));
 
         return http.post(requestUrl, data)
@@ -339,25 +341,25 @@ export class HomeContainer extends Component {
                 projects: this.getStringOfNameProjects(employee.projects),
                 position: employee.position,
                 readyForTransition: (
-                    <Table.Cell key={index + 5} className='ready-for-transition-table'
-                        onClick={e =>
-                        this.switchReadyForTransition(employee)}>
-                        {employee.readyForTransition ? 'Yes' : 'No'}
+                    <Table.Cell key={index + 5} className='ready-for-transition-table'>
+                        <Checkbox key={index + 6}
+                                  checked={ employee.readyForTransition }
+                                  onClick={e => this.switchReadyForTransition(employee)} />
                     </Table.Cell>
                 ),
                 available: (
-                    <Table.Cell key={index + 6} className='ready-for-transition-table'
-                        onClick={e =>
-                            this.switchAvailableMarker(employee)}>
-                        {employee.available ? 'Yes' : 'No'}
+                    <Table.Cell key={index + 7} className='ready-for-transition-table'>
+                        <Checkbox  key={index + 8}
+                                   checked={ employee.available }
+                                   onClick={e => this.switchAvailableMarker(employee)}/>
                     </Table.Cell>
                 ),
                 startedAt: employee.startedAt,
                 actions: (
-                    <Table.Cell key={ index + 8 }>
+                    <Table.Cell key={ index + 10 }>
                         <UserPopup user={ employee }
                                    projects={this.getStringOfNameProjects(employee.projects)}
-                                   key={ index + 9 }
+                                   key={ index + 11 }
                                    trigger={
                                        <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
                                            <Icon name="search"
