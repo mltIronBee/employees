@@ -1,5 +1,6 @@
 import React, { Component }  from 'react';
 import moment from 'moment';
+import _ from 'lodash';
 import { Table, Grid, Button, Icon, Dropdown, Menu } from 'semantic-ui-react';
 import { Link } from 'react-router';
 import http from '../helpers/http';
@@ -14,7 +15,9 @@ export class ProjectTable extends Component {
         loaderActive: false,
         currentProjectId: '',
         currentPage: 0,
-        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10
+        fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10,
+        column: '',
+        direction: ''
     };
 
     dropdownOptions = [
@@ -155,8 +158,45 @@ export class ProjectTable extends Component {
         return pages;
     };
 
+    handleSort = clickedColumn => {
+        const { column, projects, direction } = this.state;
 
-    getProjectsHeaderRowForTable = ['#', 'Project name', 'Start Date', 'Start Project', 'Actions'];
+        if (column !== clickedColumn) {
+            this.setState({
+                column: clickedColumn,
+                projects: _.sortBy(projects, [clickedColumn]),
+                direction: 'ascending',
+            });
+            return
+        }
+
+        this.setState({
+            projects: projects.reverse(),
+            direction: direction === 'ascending' ? 'descending' : 'ascending',
+        })
+    };
+
+    getProjectsHeaderRowForTable = () => (
+        <Table.Row>
+            <Table.HeaderCell>#</Table.HeaderCell>
+            <Table.HeaderCell
+                sorted={this.state.column === 'name' ? this.state.direction : null}
+                onClick={ e => this.handleSort('name')}>
+                Project name
+            </Table.HeaderCell>
+            <Table.HeaderCell
+                sorted={this.state.column === 'startDate' ? this.state.direction : null}
+                onClick={ e => this.handleSort('startDate')}>
+                Start Date
+            </Table.HeaderCell>
+            <Table.HeaderCell
+                sorted={this.state.column === 'startDate' ? this.state.direction : null}
+                onClick={ e => this.handleSort('startDate')}>
+                Start Project
+            </Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+        </Table.Row>
+    );
 
     getProjectsTableData = projects => {
         return projects.length
@@ -264,9 +304,10 @@ export class ProjectTable extends Component {
                                      entity='project'/>
                 <Grid.Column width={16}>
                     <Table singleLine
+                           sortable
                            compact
                            color="blue"
-                           headerRow={ this.getProjectsHeaderRowForTable }
+                           headerRow={ this.getProjectsHeaderRowForTable() }
                            footerRow={ this.getFooterRow }
                            tableData={ this.getProjectsTableData(this.paginate(this.state.projects)) }
                            renderBodyRow={ this.renderProjectsTable }
