@@ -160,18 +160,19 @@ export class ProjectTable extends Component {
 
     handleSort = clickedColumn => {
         const { column, projects, direction } = this.state;
+        const sortedProjects = _.sortBy(projects, [clickedColumn]);
 
         if (column !== clickedColumn) {
             this.setState({
                 column: clickedColumn,
-                projects: _.sortBy(projects, [clickedColumn]),
+                projects: sortedProjects,
                 direction: 'ascending',
             });
             return
         }
 
         this.setState({
-            projects: projects.reverse(),
+            projects: direction === 'ascending' ? sortedProjects.reverse() : sortedProjects,
             direction: direction === 'ascending' ? 'descending' : 'ascending',
         })
     };

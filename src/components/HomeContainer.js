@@ -460,18 +460,19 @@ export class HomeContainer extends Component {
 
     handleSort = clickedColumn => {
         const { column, employees, direction } = this.state;
+        const sortedEmployees = _.sortBy(employees, [clickedColumn]);
 
         if (column !== clickedColumn) {
             this.setState({
                 column: clickedColumn,
-                employees: _.sortBy(employees, [clickedColumn]),
+                employees: sortedEmployees,
                 direction: 'ascending',
             });
             return
         }
 
         this.setState({
-            employees: employees.reverse(),
+            employees: direction === 'ascending' ? sortedEmployees.reverse() : sortedEmployees,
             direction: direction === 'ascending' ? 'descending' : 'ascending',
         })
     };
