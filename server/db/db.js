@@ -39,13 +39,15 @@ export const getAllUsers = adminLogin =>
             ])
         )
         .then(([ users, userEmployees ]) => {
-            users.map((user, index) =>
+            //Added users=, so delete user.password will actually work
+            //instead of exposing password
+            users = users.map((user, index) => 
                 Object.assign({}, user.toObject(), { employees: userEmployees[index] }));
 
             return users.filter(user => {
                 delete user.password;
-                return user.login !== adminLogin
-            })
+                return user.login !== adminLogin;
+            });
         });
 
 export const createUser = data =>
@@ -177,8 +179,8 @@ export const getProjectById = id =>
         .catch(console.log);
 
 export const getProjectByIdWithEmployees = projectId =>
-    Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
-        .then(([ project, allEmployees ]) => ({ project, allEmployees }));
+    Promise.all([getProjectById(projectId), getEmployeesForProject(projectId), getAllUsers()])
+        .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees }));
 
 export const getAllEmployeesForProject = () =>
     Employee.find().lean().exec();

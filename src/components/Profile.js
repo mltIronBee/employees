@@ -149,7 +149,12 @@ export class Profile extends Component {
             .then(res => {
                     this.setState({ readOnly: true });
                     this.notification.show('Data is updated');
-                    browserHistory.push('/');
+                    browserHistory.push({
+                        pathname: '/',
+                        state: {
+                            selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : ''
+                        }
+                    });
             })
             .catch(err => {
                 this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
@@ -274,7 +279,12 @@ export class Profile extends Component {
                                           name="reply"
                                           size="big"
                                           style={{cursor: "pointer", float: "left"}}
-                                          onClick={() => { browserHistory.push('/') }}>
+                                          onClick={() => { 
+                                            browserHistory.push({
+                                                pathname: '/',
+                                                state: { selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : '' }
+                                            }) 
+                                        }}>
                                     </Icon>
                                     {
                                         this.state.readOnly

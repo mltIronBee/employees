@@ -27,7 +27,8 @@ export class HomeContainer extends Component {
         loaderActive: false,
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10,
         column: '',
-        direction: ''
+        direction: '',
+        selectedUserId: ''
     };
 
     dropdownOptions = [
@@ -73,6 +74,16 @@ export class HomeContainer extends Component {
         this.checkUserAndLoadData(nextProps.user);
         document.addEventListener('keyup', this.onModalActions);
     };
+
+    //Adding this, so when we're getting back from viewing/editing employee
+    //we dont have to re-select user
+    componentDidMount() {
+        if( this.props.location.state ) {
+            this.setState({
+                selectedUserId: this.props.location.state.selectedUserId
+            });
+        }
+    }
 
     checkUserAndLoadData = user => {
         if (user) {
@@ -334,37 +345,39 @@ export class HomeContainer extends Component {
             .catch(console.log)
     };
 
+    //adding key and content for case, where duplicating values of fields
+    //would mess up table
     prepareEmployeesTableData = array => {
         if(array.length) {
             return array.map((employee, index) => ({
                 className: this.getClassName(employee),
                 index: index + 1,
-                firstName: employee.firstName,
-                lastName: employee.lastName,
-                projects: this.getStringOfNameProjects(employee.projects),
-                position: employee.position,
+                firstName: { key: index+2, content: employee.firstName },
+                lastName: { key: index+3, content: employee.lastName },
+                projects: { key: index+4, content: this.getStringOfNameProjects(employee.projects) },
+                position: { key: index+5, content: employee.position },
                 readyForTransition: (
-                    <Table.Cell key={index + 5} className='ready-for-transition-table'>
-                        <Checkbox key={index + 6}
+                    <Table.Cell key={index + 6} className='ready-for-transition-table'>
+                        <Checkbox key={index + 7}
                                   checked={ employee.readyForTransition }
                                   onClick={e => this.switchReadyForTransition(employee)} />
                     </Table.Cell>
                 ),
                 available: (
-                    <Table.Cell key={index + 7} className='ready-for-transition-table'>
-                        <Checkbox  key={index + 8}
+                    <Table.Cell key={index + 8} className='ready-for-transition-table'>
+                        <Checkbox  key={index + 9}
                                    checked={ employee.available }
                                    onClick={e => this.switchAvailableMarker(employee)}/>
                     </Table.Cell>
                 ),
                 startedAt: employee.startedAt,
                 actions: (
-                    <Table.Cell key={ index + 10 }>
+                    <Table.Cell key={ index + 11 }>
                         <UserPopup user={ employee }
                                    projects={this.getStringOfNameProjects(employee.projects)}
-                                   key={ index + 11 }
+                                   key={ index + 12 }
                                    trigger={
-                                       <Link to={{ pathname: '/profile', query: { id: employee._id } }}>
+                                       <Link to={{ pathname: '/profile', query: { id: employee._id }, state: { selectedUserId: this.state.selectedUserId } }}>
                                            <Icon name="search"
                                                  size="large"
                                                  link color="blue" />
@@ -563,7 +576,8 @@ export class HomeContainer extends Component {
             firstName: '',
             lastName: '',
             skills: [],
-            filtered: []
+            filtered: [],
+            selectedUserId: userId
         }, () => this.onUserClickContinue(userId))
     };
 
@@ -597,7 +611,8 @@ export class HomeContainer extends Component {
                      prepareOptionsForSearch={ this.prepareOptionsForSearch }
                      prepareOptionForFirstAndLastName={ this.prepareOptionForFirstAndLastName }
                      prepareProjectsForSearch={ this.prepareProjectsForSearch }
-                     loaderActive={ this.state.loaderActive }/>
+                     loaderActive={ this.state.loaderActive }
+                     previouslySelectedId={ this.state.selectedUserId }/>
             : <Home getEmployeesTableProps={ this.getEmployeesTableProps }
                     getEmployeesSkillsSearchData={ this.getEmployeesSkillsSearchData }
                     prepareOptionsForSearch={ this.prepareOptionsForSearch }

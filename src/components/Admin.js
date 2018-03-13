@@ -45,7 +45,8 @@ export const Admin = props => (
                          className="custom-scroll"
                          style={{ maxHeight: '473px', overflowY: 'scroll' }} >
                     <UserList users={ props.users }
-                              onUserClick={ props.onUserClick } />
+                              onUserClick={ props.onUserClick } 
+                              previouslySelectedId={ !props.loaderActive && props.previouslySelectedId } />
                 </Segment>
             </Grid.Column>
             <Grid.Column width={13}>

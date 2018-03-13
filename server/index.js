@@ -130,7 +130,6 @@ apiRoutes.get('/employee', requiredAuthMiddleware, (req, res) => {
 
 apiRoutes.get('/employees', requiredAuthMiddleware, (req, res) => {
     const { name: login } = auth(req);
-
     db.getAllEmployees(login)
         .then(employees => res.send(employees))
         .catch(err => res.status(400).send(err));

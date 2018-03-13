@@ -26,6 +26,13 @@ export class UserList extends Component {
         }
 }));
 
+    componentDidMount() {
+        if( this.props.previouslySelectedId ) {
+            this.props.onUserClick( this.props.previouslySelectedId );
+            this.setState({ selectedUserId: this.props.previouslySelectedId });
+        }
+    }
+
     render() {
         return (
             <List divided
