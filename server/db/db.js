@@ -39,12 +39,12 @@ export const getAllUsers = adminLogin =>
             ])
         )
         .then(([ users, userEmployees ]) => {
-            //Added users=, so delete user.password will actually work
+            //Added list=, so delete user.password will actually work
             //instead of exposing password
-            users = users.map((user, index) => 
+            const list = users.map((user, index) => 
                 Object.assign({}, user.toObject(), { employees: userEmployees[index] }));
 
-            return users.filter(user => {
+            return list.filter(user => {
                 delete user.password;
                 return user.login !== adminLogin;
             });
@@ -139,6 +139,7 @@ export const getAllProjects = () =>
 
 export const getProjectsWithEmployees = () =>
     Project.find()
+        .populate('managers', '_id firstName lastName')
         .lean()
         .exec()
         .then(projects => {
@@ -164,8 +165,30 @@ export const getProjectsWithEmployees = () =>
 export const getEmployeesForProject = projectId =>
     Employee.find( { projects: { $nin: [ projectId ] } } ).exec();
 
+export const getManagersForProject = (project, adminLogin) => {
+    return User
+        .find()
+        .lean()
+        .exec()
+        .then(users => {
+            const list = project && project.managers
+            ? users.filter(user => {
+                delete user.password;
+                return user.login !== adminLogin &&
+                !project.managers.map( pm => pm.login ).includes(user.login);
+            })
+            : users.filter( user => {
+                delete user.password;
+                return user.login !== adminLogin
+            })
+
+            return list;
+        });
+}
+
 export const getProjectById = id =>
     Project.findById(id)
+        .populate('managers', '_id login firstName lastName')
         .lean()
         .exec()
         .then(project => {
@@ -178,9 +201,11 @@ export const getProjectById = id =>
         })
         .catch(console.log);
 
-export const getProjectByIdWithEmployees = projectId =>
-    Promise.all([getProjectById(projectId), getEmployeesForProject(projectId), getAllUsers()])
-        .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees }));
+export const getProjectByIdWithEmployees = (projectId, adminLogin) =>
+    Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
+        .then(([ project, allEmployees ]) => 
+            Promise.all( [project, allEmployees, getManagersForProject(project, adminLogin)] ))
+        .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees, allManagers }));
 
 export const getAllEmployeesForProject = () =>
     Employee.find().lean().exec();

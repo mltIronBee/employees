@@ -17,7 +17,10 @@ export class ProjectTable extends Component {
         currentPage: 0,
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10,
         column: '',
-        direction: ''
+        direction: '',
+        firstName: '',
+        lastName: '',
+        filtered: []
     };
 
     dropdownOptions = [
@@ -186,6 +189,11 @@ export class ProjectTable extends Component {
                 Project name
             </Table.HeaderCell>
             <Table.HeaderCell
+                sorted={this.state.column === 'managers' ? this.state.direction : null}
+                onClick={ e => this.handleSort('managers') } >
+                Project Managers
+            </Table.HeaderCell>
+            <Table.HeaderCell
                 sorted={this.state.column === 'startDate' ? this.state.direction : null}
                 onClick={ e => this.handleSort('startDate')}>
                 Start Date
@@ -204,6 +212,7 @@ export class ProjectTable extends Component {
             ? projects.map((project, index) => ({
                 index: index + 1,
                 name: project.name,
+                managers: this.getStringNameOfManagers(project.managers),
                 startDate: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : '',
                 startProject: (
                     <Table.Cell key={ index + 4 }>
@@ -233,11 +242,18 @@ export class ProjectTable extends Component {
             : [{ index: 'No projects yet' }]
     };
 
-    renderProjectsTable = ({ index, name, startDate, startProject, actions }) => ({
+    getStringNameOfManagers = managers => (
+        managers
+        ? managers.map( manager => `${manager.firstName} ${manager.lastName}` ).join(', ')
+        : 'No managers assigned for this project'
+    );
+
+    renderProjectsTable = ({ index, name, managers, startDate, startProject, actions }) => ({
         key: index,
         cells: [
             index,
             name,
+            managers,
             startDate,
             startProject,
             actions
@@ -286,35 +302,105 @@ export class ProjectTable extends Component {
         document.removeEventListener('keyup', this.onModalActions);
     }
 
+    prepareOptions = () => {
+        const options = [{
+            text: 'selected none',
+            value: '',
+            key: 0
+        }];
+        const managers = [];
+        
+        this.state.projects.forEach( project => {
+            project.managers.forEach( manager => {
+                if(!managers.includes(`${manager.firstName} ${manager.lastName}`))
+                    managers.push(`${manager.firstName} ${manager.lastName}`);
+            });
+        });
+
+        managers.forEach( (manager, index) => {
+            options.push({
+                text: manager,
+                value: manager,
+                key: index+1
+            });
+        });
+
+        return options;
+    }
+
+    dropdownOnChange = (e, {value}) => {
+        if(value) {
+            const [ firstName, lastName ] = value.replace(/\s{1,}/g, ' ').split(' ');
+            this.setState({
+                firstName,
+                lastName
+            }, this.filterTable);
+        }
+        else {
+            this.setState({
+                firstName: '',
+                lastName: ''
+            }, this.filterTable);
+        }
+    }
+
+    filterTable = () => {
+        const filtered = this.state.projects
+            .filter( project => 
+                project.managers.filter( manager => 
+                    manager.firstName === this.state.firstName
+                    && manager.lastName === this.state.lastName ).length > 0
+            );
+
+        this.setState({ filtered });
+    }
+
+    getProjectsList = () => {
+        return this.state.filtered.length
+            ? this.state.filtered
+            : this.state.projects;
+    }
+
     render() {
-        return <Grid container>
-            <LoaderComponent loaderActive={ this.state.loaderActive }/>
-            <Grid.Row>
-                <Grid.Column width={6} floated='right'>
-                    <Link to="project/create">
-                        <Button floated="right" color="blue" style={{ marginTop: '40px' }}>
-                            Add new project
-                        </Button>
-                    </Link>
-                </Grid.Column>
-            </Grid.Row>
-            <Grid.Row>
-                <DeleteEmployeeModal isModalOpened={ this.state.isModalOpened }
-                                     onModalClose={ this.onModalClose }
-                                     onDelete={ this.onProjectDelete }
-                                     entity='project'/>
-                <Grid.Column width={16}>
-                    <Table singleLine
-                           sortable
-                           compact
-                           color="blue"
-                           headerRow={ this.getProjectsHeaderRowForTable() }
-                           footerRow={ this.getFooterRow }
-                           tableData={ this.getProjectsTableData(this.paginate(this.state.projects)) }
-                           renderBodyRow={ this.renderProjectsTable }
-                    />
-                </Grid.Column>
-            </Grid.Row>
-        </Grid>
+        return (
+            <Grid container>
+                <LoaderComponent loaderActive={ this.state.loaderActive }/>
+                <Grid.Row>
+                    <Grid.Column width={5} floated='left' style={{ marginTop: '40px'}} >
+                        <Dropdown fluid
+                              search
+                              selection
+                              scrolling
+                              options={ this.prepareOptions() }
+                              placeholder='Search Project Manager'
+                              onChange={ this.dropdownOnChange } />
+                    </Grid.Column>
+                    <Grid.Column width={6} floated='right'>
+                        <Link to="project/create">
+                            <Button floated="right" color="blue" style={{ marginTop: '40px' }}>
+                                Add new project
+                            </Button>
+                        </Link>
+                    </Grid.Column>
+                </Grid.Row>
+                <Grid.Row>
+                    <DeleteEmployeeModal isModalOpened={ this.state.isModalOpened }
+                                         onModalClose={ this.onModalClose }
+                                         onDelete={ this.onProjectDelete }
+                                         entity='project'/>
+                    <Grid.Column width={16}>
+                        <Table singleLine
+                               sortable
+                               compact
+                               color="blue"
+                               headerRow={ this.getProjectsHeaderRowForTable() }
+                               footerRow={ this.getFooterRow }
+                               tableData={ this.getProjectsTableData(this.paginate(this.getProjectsList())) }
+                               renderBodyRow={ this.renderProjectsTable }
+                        />
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        )
     }
 }

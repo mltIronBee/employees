@@ -5,6 +5,7 @@ import { apiPrefix } from '../../config';
 import { Grid, Form, Button, Icon, Segment, Table } from 'semantic-ui-react';
 import { Notification } from './Notification';
 import { AddEmployeePopup } from "./AddEmployeePopup";
+import AddPMPopup from './AddPMPopup';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
 
 export class Project extends Component {
@@ -18,10 +19,14 @@ export class Project extends Component {
         projectEmployees: [],
         allEmployees: [],
         currentEmployeeId: '',
-        isModalOpened: false,
-        popupIsOpen: false
-    };
-
+        isModalOpened: 0,       //0b01 Employees modal is opened, 0b10 PMs modal is opened
+        popupIsOpen: 0,         //Same, as modal
+        allManagers: [],
+        projectManagers: [],
+        currentManagerId: '',
+        succeeded: false        //Notification is failing to show due to transitioning to anoter
+    };                          //page. Adding delay and this variable to disable controls and ensure
+                                //that notification is being shown
     componentDidMount() {
         this.props.params.method === 'create'
             ? this.getDataForProjectCreation()
@@ -30,9 +35,18 @@ export class Project extends Component {
     }
 
     onModalActions = ({which}) => {
-        which === 13 && this.state.isModalOpened
+        if( this.state.succeeded ) { return; }
+        if( which === 13 && this.state.isModalOpened ) {
+            if( this.state.currentEmployeeId )
+                this.employeeDeleteFromTable();
+            else if( this.state.currentManagerId )
+                this.managerDeleteFromTable();
+        }
+        else if( which === 27 && this.state.isModalOpened )
+            this.setState({ isModalOpened: 0 });
+        /*which === 13 && this.state.isModalOpened
             ? this.employeeDeleteFromTable()
-            : (which === 27 && this.state.isModalOpened) && this.setState({ isModalOpened: false });
+            : (which === 27 && this.state.isModalOpened) && this.setState({ isModalOpened: false });*/
     };
 
     getDataForProjectCreation = () => {
@@ -49,29 +63,51 @@ export class Project extends Component {
             .catch(console.log)
     };
 
-    onGetProject = ({ data: { project, allEmployees} }) => {
+    onGetProject = ({ data: { project, allEmployees, allManagers } }) => {
         this.setState({
             id: project._id,
             name: project.name,
             startDate: project.startDate,
             projectEmployees: project.employees,
-            allEmployees
+            allEmployees,
+            projectManagers: !!project.managers ? project.managers : [],
+            allManagers
         })
     };
 
-    getEmployeesTable = () => (
-        <div className={this.state.projectEmployees.length > 10 ? 'table-body-projects' : ''}>
-            <Table singleLine
-                   compact
-                   fixed
-                   size='small'
-                   color='blue'>
+    //Getting rid of getEmployeesTable due to necessity to duplicate code for
+    //Project Managers table
+    getTable = (item, renderFunc) => (
+        <div className={item.length > 10 ? 'table-body-projects' : ''} >
+            <Table  singleLine
+                    compact
+                    fixed
+                    size='small'
+                    color='blue'>
                 <Table.Body>
-                    { this.renderEmployeesData() }
+                    { renderFunc() }
                 </Table.Body>
             </Table>
         </div>
     );
+
+    renderManagersData = () => {
+        return this.state.projectManagers.length
+            ? this.state.projectManagers.map(( manager, index ) => (
+                <Table.Row key={index}>
+                    <Table.Cell width={2}>{index+1}</Table.Cell>
+                    <Table.Cell width={6}>{`${manager.firstName} ${manager.lastName}`}</Table.Cell>
+                    <Table.Cell width={1}>
+                        <Icon name='delete'
+                            size='large'
+                            link
+                            color='red'
+                            onClick={ () => { this.setState({ isModalOpened: 2, currentManagerId: manager._id })} } />
+                    </Table.Cell>
+                </Table.Row>
+            ))
+            : <Table.Row><Table.Cell>No project managers has been assigned to this project</Table.Cell></Table.Row>
+    };
 
     renderEmployeesData = () => {
         return this.state.projectEmployees.length
@@ -84,19 +120,21 @@ export class Project extends Component {
                             size="large"
                             link
                             color="red"
-                            onClick={ () => { this.setState({ isModalOpened: true, currentEmployeeId: employee._id })} } />
+                            onClick={ () => { this.setState({ isModalOpened: 1, currentEmployeeId: employee._id })} } />
                     </Table.Cell>
                 </Table.Row>
             ))
             : <Table.Row><Table.Cell>No employees yet</Table.Cell></Table.Row>
     };
 
-    preparedEmployees = () =>
-        this.state.allEmployees.map((employee, index) => ({
-            text: `${employee.firstName} ${employee.lastName}`,
-            value: employee._id,
+    //getting rid of preparedEmployers in order to avoid code duplication
+    prepareValues = ( values ) => (
+        values.map(( item, index ) => ({
+            text: `${item.firstName} ${item.lastName}`,
+            value: item._id,
             key: index
-        }));
+        }))
+    );
 
     addEmployeesToTable = employees => {
         const filtredEmployees = this.state.allEmployees
@@ -108,6 +146,18 @@ export class Project extends Component {
         this.setState(prevState => ({
             allEmployees: filtredEmployees,
             projectEmployees: [...prevState.projectEmployees, ...employeesForAdding]
+        }));
+    };
+
+    addManagersToTable = managers => {
+        const filteredManagers = this.state.allManagers
+            .filter(manager => !managers.includes(manager._id));
+
+        const managersForAdding = managers
+            .map(id => this.state.allManagers.find(manager => manager._id === id));
+        this.setState(prevState => ({
+            allManagers: filteredManagers,
+            projectManagers: [...prevState.projectManagers, ...managersForAdding]
         }));
     };
 
@@ -146,7 +196,18 @@ export class Project extends Component {
 
     setPopupState = popupIsOpen => this.setState({ popupIsOpen });
 
-    onModalClose = () => this.setState({ isModalOpened: false });
+    onModalClose = () => this.setState({ isModalOpened: 0, currentManagerId: '', currentEmployeeId: '' });
+
+    managerDeleteFromTable = () => {
+        this.setState(prevState => ({
+            projectManagers: prevState.projectManagers
+                .filter(manager => manager._id !== prevState.currentManagerId),
+            allManagers: [ ...prevState.allManagers, prevState.projectManagers
+                .find(manager => manager._id === prevState.currentManagerId)],
+            isModalOpened: 0,
+            currentManagerId: ''
+        }))
+    };
 
     employeeDeleteFromTable = () => {
         this.setState(prevState => ({
@@ -154,7 +215,8 @@ export class Project extends Component {
                 .filter(employee => employee._id !== prevState.currentEmployeeId),
             allEmployees: [ ...prevState.allEmployees, prevState.projectEmployees
                 .find(employee => employee._id === prevState.currentEmployeeId)],
-            isModalOpened: false
+            isModalOpened: 0,
+            currentEmployeeId: ''
         }))
     };
 
@@ -174,12 +236,11 @@ export class Project extends Component {
 
     saveData = e => {
         e.preventDefault();
-        let { id, name, isCreating } = this.state;
+        let { id, name, projectManagers, isCreating } = this.state;
         const requestUrl = `${apiPrefix}/project/${ isCreating ? 'create' : 'update' }`;
-
         if(!name) return this.notification.show('Project name must be required!', 'danger');
-
-        const obj = { name };
+        if(!projectManagers.length) return this.notification.show('Project must have at least one project manager', 'danger');
+        const obj = { name, managers: projectManagers };
         if (!isCreating) obj._id = id;
 
         http.post(requestUrl, obj)
@@ -190,7 +251,9 @@ export class Project extends Component {
                 ]))
             .then(result => {
                 this.notification.show('Data is updated');
-                browserHistory.push('/projects');
+                this.setState( {succeeded: true}, () => {
+                    setTimeout(() => { browserHistory.push('/projects') }, 3000);
+                });
             })
             .catch(err => {
                 this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
@@ -205,10 +268,15 @@ export class Project extends Component {
     render() {
         return (
             <Grid container centered columns={2}>
-                <DeleteEmployeeModal isModalOpened={ this.state.isModalOpened }
+                <DeleteEmployeeModal isModalOpened={ !!(this.state.isModalOpened & 1) }
                                      onModalClose={ this.onModalClose }
                                      onDelete={ this.employeeDeleteFromTable }
                                      entity='employee from project'/>
+                {/*Yeah, it's not an employee modal, but still.*/}
+                <DeleteEmployeeModal isModalOpened={ !!(this.state.isModalOpened & 2) }
+                                     onModalClose={ this.onModalClose }
+                                     onDelete={ this.managerDeleteFromTable }
+                                     entity='project manager from project'/>
                 <Notification ref={ node => { this.notification = node } }/>
                 <Grid.Column textAlign='left'>
                     <Segment raised color='blue' style={{marginTop: "40px"}}>
@@ -222,6 +290,7 @@ export class Project extends Component {
                                           onClick={() => { browserHistory.push('/projects') }}>
                                     </Icon>
                                     <Button color="blue"
+                                            disabled={ this.state.succeeded }
                                             onClick={ this.saveData }
                                             floated="right">
                                         Save
@@ -238,25 +307,43 @@ export class Project extends Component {
                             <Form.Field>
                                 <span className='add-employee-row' style={{marginBottom: '10px'}}>
                                     <AddEmployeePopup
-                                        employees={ this.preparedEmployees() }
+                                        employees={ this.prepareValues(this.state.allEmployees) }
                                         addEmployeesToTable={ this.addEmployeesToTable }
-                                        popupIsOpen={ this.state.popupIsOpen }
+                                        popupIsOpen={ !!(this.state.popupIsOpen & 1) }
                                         setPopupState={ this.setPopupState }
                                         trigger={
                                             <Button className='add-employee-button'
                                                     onClick={ e => {
                                                         e.preventDefault();
                                                         this.setState(prevState => (
-                                                            {popupIsOpen: !prevState.popupIsOpen}
+                                                            {popupIsOpen: ~prevState.popupIsOpen & 1}
                                                         ))
                                                     }}>
                                                 Add employee
                                             </Button>
                                         }/>
-
+                                    <AddPMPopup
+                                        employees={ this.prepareValues(this.state.allManagers) }
+                                        addEmployeesToTable={ this.addManagersToTable }
+                                        popupIsOpen={ !!(this.state.popupIsOpen & 2) }
+                                        setPopupState={ this.setPopupState }
+                                        trigger={
+                                            <Button className='add-employee-button'
+                                                    onClick={ e => {
+                                                        e.preventDefault();
+                                                        this.setState(prevState => (
+                                                            {popupIsOpen: ~prevState.popupIsOpen & 2}
+                                                        ))
+                                                    }}>
+                                                Add PM
+                                            </Button>
+                                        }/>
                                 </span>
+                                <label>Project Managers</label>
+                                { this.getTable(this.state.projectManagers, this.renderManagersData) }
+                                <br />
                                 <label>Employees</label>
-                                { this.getEmployeesTable() }
+                                { this.getTable(this.state.projectEmployees, this.renderEmployeesData) }
                             </Form.Field>
                         </Form>
                     </Segment>

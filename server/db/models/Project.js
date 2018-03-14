@@ -7,6 +7,11 @@ const ProjectSchema = new Schema({
         required: true
     },
 
+    managers: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+
     startDate: {
         type: Date
     }
