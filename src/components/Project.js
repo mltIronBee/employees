@@ -23,9 +23,10 @@ export class Project extends Component {
         popupIsOpen: 0,         //Same, as modal
         allManagers: [],
         projectManagers: [],
-        currentManagerId: ''
-    };
-
+        currentManagerId: '',
+        succeeded: false        //Notification is failing to show due to transitioning to anoter
+    };                          //page. Adding delay and this variable to disable controls and ensure
+                                //while notification is being shown
     componentDidMount() {
         this.props.params.method === 'create'
             ? this.getDataForProjectCreation()
@@ -34,6 +35,7 @@ export class Project extends Component {
     }
 
     onModalActions = ({which}) => {
+        if( this.state.succeeded ) { return; }
         if( which === 13 && this.state.isModalOpened ) {
             if( this.state.currentEmployeeId )
                 this.employeeDeleteFromTable();
@@ -250,7 +252,9 @@ export class Project extends Component {
                 ]))
             .then(result => {
                 this.notification.show('Data is updated');
-                browserHistory.push('/projects');
+                this.setState( {succeeded: true}, () => {
+                    setTimeout(() => { browserHistory.push('/projects') }, 3000);
+                });
             })
             .catch(err => {
                 this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
@@ -287,6 +291,7 @@ export class Project extends Component {
                                           onClick={() => { browserHistory.push('/projects') }}>
                                     </Icon>
                                     <Button color="blue"
+                                            disabled={ this.state.succeeded }
                                             onClick={ this.saveData }
                                             floated="right">
                                         Save

@@ -147,13 +147,16 @@ export class Profile extends Component {
 
         http.post(requestUrl, data)
             .then(res => {
-                    this.setState({ readOnly: true });
                     this.notification.show('Data is updated');
-                    browserHistory.push({
-                        pathname: '/',
-                        state: {
-                            selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : ''
-                        }
+                    this.setState({ readOnly: true }, () => {
+                        setTimeout( () => {
+                            browserHistory.push({
+                                pathname: '/',
+                                state: {
+                                    selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : ''
+                                }
+                            });
+                        }, 3000);
                     });
             })
             .catch(err => {
