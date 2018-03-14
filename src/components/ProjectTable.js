@@ -186,6 +186,11 @@ export class ProjectTable extends Component {
                 Project name
             </Table.HeaderCell>
             <Table.HeaderCell
+                sorted={this.state.column === 'managers' ? this.state.direction : null}
+                onClick={ e => this.handleSort('managers') } >
+                Project Managers
+            </Table.HeaderCell>
+            <Table.HeaderCell
                 sorted={this.state.column === 'startDate' ? this.state.direction : null}
                 onClick={ e => this.handleSort('startDate')}>
                 Start Date
@@ -204,6 +209,7 @@ export class ProjectTable extends Component {
             ? projects.map((project, index) => ({
                 index: index + 1,
                 name: project.name,
+                managers: this.getStringNameOfManagers(project.managers),
                 startDate: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : '',
                 startProject: (
                     <Table.Cell key={ index + 4 }>
@@ -233,11 +239,18 @@ export class ProjectTable extends Component {
             : [{ index: 'No projects yet' }]
     };
 
-    renderProjectsTable = ({ index, name, startDate, startProject, actions }) => ({
+    getStringNameOfManagers = managers => (
+        managers
+        ? managers.map( manager => `${manager.firstName} ${manager.lastName}` ).join(', ')
+        : 'No managers assigned for this project'
+    );
+
+    renderProjectsTable = ({ index, name, managers, startDate, startProject, actions }) => ({
         key: index,
         cells: [
             index,
             name,
+            managers,
             startDate,
             startProject,
             actions

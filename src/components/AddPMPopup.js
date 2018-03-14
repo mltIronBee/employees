@@ -1,29 +1,21 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Popup, Grid, Dropdown, Button } from 'semantic-ui-react';
+import { AddEmployeePopup } from './AddEmployeePopup';
 
-export class AddEmployeePopup extends Component {
-    state = {
-        selectedEmployees: []
-    };
+//It's maybe confusing, that functions and state named as Employees
+//but it's a needed step in order to avoid unnecessary code duplication
 
-    selectingEmployees = (e, { value }) => {
-        this.setState({ selectedEmployees: value });
-    };
-
-    addEmployeesToTable = () => {
-        this.props.addEmployeesToTable(this.state.selectedEmployees);
-    };
-
-    close = e => {
-        if(e.target.name === 'addEmployeesButton') {
+export default class AddPMPopup extends AddEmployeePopup {
+	close = e => {
+        if(e.target.name === 'addPMButton') {
             this.setState({selectedEmployees: []});
             this.props.setPopupState(0);
         }
     };
 
-    render() {
-        return (
-            <Popup
+	render() {
+		return (
+			<Popup
                 on='click'
                 positioning='bottom left'
                 className='add-employee-popup'
@@ -39,12 +31,12 @@ export class AddEmployeePopup extends Component {
                                   selection
                                   multiple
                                   scrolling
-                                  placeholder='Select employees'
+                                  placeholder='Select project managers'
                                   onChange={ this.selectingEmployees }
                                   options={this.props.employees}/>
                         <Button inverted
                                 style={{width: '100%'}}
-                                name='addEmployeesButton'
+                                name='addPMButton'
                                 color='green'
                                 disabled={ !this.state.selectedEmployees.length }
                                 onClick={ this.addEmployeesToTable } >
@@ -52,7 +44,7 @@ export class AddEmployeePopup extends Component {
                         </Button>
                     </Grid.Column>
                 </Grid>
-        </Popup>
-        )
-    }
+        	</Popup>
+		);
+	}
 }

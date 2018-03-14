@@ -170,8 +170,9 @@ apiRoutes.get('/projects', requiredAuthMiddleware, (req, res) => {
 });
 
 apiRoutes.get('/project', requiredAuthMiddleware, (req, res) => {
+    const { name: login } = auth(req);
     const query = req.query && req.query._id
-        ? db.getProjectByIdWithEmployees(req.query._id)
+        ? db.getProjectByIdWithEmployees(req.query._id, login)
         : db.getAllEmployeesForProject();
     query
         .then(result => res.send(result))
