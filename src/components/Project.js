@@ -26,7 +26,7 @@ export class Project extends Component {
         currentManagerId: '',
         succeeded: false        //Notification is failing to show due to transitioning to anoter
     };                          //page. Adding delay and this variable to disable controls and ensure
-                                //while notification is being shown
+                                //that notification is being shown
     componentDidMount() {
         this.props.params.method === 'create'
             ? this.getDataForProjectCreation()
@@ -238,9 +238,8 @@ export class Project extends Component {
         e.preventDefault();
         let { id, name, projectManagers, isCreating } = this.state;
         const requestUrl = `${apiPrefix}/project/${ isCreating ? 'create' : 'update' }`;
-
         if(!name) return this.notification.show('Project name must be required!', 'danger');
-        if(!projectManagers) return this.notification.show('Project must have at least one project manager', 'danger');
+        if(!projectManagers.length) return this.notification.show('Project must have at least one project manager', 'danger');
         const obj = { name, managers: projectManagers };
         if (!isCreating) obj._id = id;
 
