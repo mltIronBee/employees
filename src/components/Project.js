@@ -51,7 +51,7 @@ export class Project extends Component {
 
     getDataForProjectCreation = () => {
         return http.get(`${apiPrefix}/project`)
-            .then(({data}) => this.setState({ isCreating: true, allEmployees: data }))
+            .then(({data}) => this.setState({ isCreating: true, allEmployees: data.allEmployees, allManagers: data.allManagers }))
             .catch(console.log)
     };
 

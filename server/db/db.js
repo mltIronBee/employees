@@ -207,6 +207,9 @@ export const getProjectByIdWithEmployees = (projectId, adminLogin) =>
             Promise.all( [project, allEmployees, getManagersForProject(project, adminLogin)] ))
         .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees, allManagers }));
 
-export const getAllEmployeesForProject = () =>
-    Employee.find().lean().exec();
+export const getAllEmployeesForProject = (adminLogin) =>
+    Promise.all([
+        Employee.find().lean().exec(),
+        getAllUsers(adminLogin)])
+    .then( ([allEmployees, allManagers]) => ({allEmployees, allManagers}) );
 
