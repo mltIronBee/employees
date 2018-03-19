@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import { dbConfig } from '../../config';
 import { User } from './models/User';
 import { Employee } from './models/Employee';
-import { Project } from "./models/Project";
+import { Project } from './models/Project';
+import { calculateProjectSummary } from '../helpers';
 
 export const setUpConnection = () =>
     mongoose.connect(`mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
@@ -106,8 +107,9 @@ export const getEmployeeById = id =>
             Object.assign({}, data, { employee })
         );
 
-export const updateEmployeeData = (id, data) =>
-    Employee.findByIdAndUpdate(id, {
+export const updateEmployeeData = (id, data) => {
+        console.log(data)
+        return Employee.findByIdAndUpdate(id, {
         $set: {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -121,6 +123,7 @@ export const updateEmployeeData = (id, data) =>
             available: data.available
         }
     });
+}
 
 export const deleteEmployee = id =>
     Employee.findByIdAndRemove(id);
@@ -128,8 +131,9 @@ export const deleteEmployee = id =>
 export const createProject = data =>
     (new Project(data)).save();
 
-export const updateProjectData = (id, data) =>
+export const updateProjectData = (id, data) => 
     Project.findByIdAndUpdate(id, { $set: data });
+
 
 export const deleteProject = id =>
     Project.findByIdAndRemove(id);
@@ -192,12 +196,15 @@ export const getProjectById = id =>
         .lean()
         .exec()
         .then(project => {
-            const employees = Employee.find({ projects:  project._id}).exec();
-            return Promise.all([ project, employees ])
+            const query = Employee.find( !!project.finishDate ? { projectsHistory: project._id } : { projects:  project._id});
+            const employees = query.exec();
+            const populatedEmployees = query.populate('projectsHistory', '_id startDate finishDate').exec();
+            return Promise.all([ project, employees, populatedEmployees ]);
         })
-        .then(([ project, employees ]) => {
+        .then(([ project, employees, populatedEmployees ]) => {
             project.employees = employees;
-            return project
+            project.summary = calculateProjectSummary(project, populatedEmployees, !!project.finishDate ? project.finishDate : new Date());
+            return project;
         })
         .catch(console.log);
 
@@ -213,3 +220,11 @@ export const getAllEmployeesForProject = (adminLogin) =>
         getAllUsers(adminLogin)])
     .then( ([allEmployees, allManagers]) => ({allEmployees, allManagers}) );
 
+export const getEmployeesCurrentProjects = (projectId, date) => {
+    Projects.findById(projectId)
+        .lean()
+        .exec()
+        .then(project => {
+
+        })
+}

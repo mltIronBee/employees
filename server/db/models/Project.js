@@ -14,19 +14,36 @@ const ProjectSchema = new Schema({
 
     startDate: {
         type: Date
+    },
+
+    finishDate: {
+        type: Date
     }
 });
 
-ProjectSchema.pre('remove', next => {
+const removeProjectFromEmployee = id => {
     return Promise.resolve()
-        .then(() => Employee
+        .then( () => Employee
             .update(
-                { projects: this._id },
-                { $pull: { projects: this._id } },
-                { multi: true }
-            )
+                    { projects: id },
+                    { $pull: { projects: id } },
+                    { multi: true }
+                )
             .exec()
         )
+};
+
+ProjectSchema.pre('findOneAndUpdate', function (next) {
+    if( this._update.$set.finishDate ) {
+        return removeProjectFromEmployee(this._update.$set._id)
+            .then( () => next());
+    }
+
+    next();
+});
+
+ProjectSchema.pre('remove', next => {
+    return removeProjectFromEmployee(this._id)
         .then(() => Employee
             .update(
                 { projectsHistory: this._id },

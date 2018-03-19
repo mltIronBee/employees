@@ -83,10 +83,13 @@ export class ProjectTable extends Component {
                 .catch(console.log)
     };
 
-    startProject = projectId => {
+    //Replaced startProject w/ changeProjectStatus
+    //Basically, we need the same query for both starting and finishing
+    //project w/ difference in only one field
+    changeProjectStatus = (projectId, field) => {
         const obj = {
             _id: projectId,
-            startDate: new Date()
+            [field]: new Date()
         };
 
         return http.post(`${apiPrefix}/project/update`, obj)
@@ -94,12 +97,14 @@ export class ProjectTable extends Component {
                     this.setState(prevState => ({
                         projects:
                             prevState.projects.map(project => project._id === obj._id
-                                ? Object.assign({}, project, { startDate: obj.startDate })
+                                ? Object.assign({}, project, { [field]: obj[field] })
                                 : project)
                     }))
                 )
                 .catch(console.log)
     };
+
+
 
     onModalClose = () => this.setState({ isModalOpened: false });
 
@@ -199,9 +204,14 @@ export class ProjectTable extends Component {
                 Start Date
             </Table.HeaderCell>
             <Table.HeaderCell
-                sorted={this.state.column === 'startDate' ? this.state.direction : null}
-                onClick={ e => this.handleSort('startDate')}>
-                Start Project
+                sorted={this.state.column === 'finishDate' ? this.state.direction : null}
+                onClick={ e => this.handleSort('finishDate') } >
+                Finish Date
+            </Table.HeaderCell>
+            <Table.HeaderCell
+                sorted={this.state.column === 'finishDate' ? this.state.direction : null}
+                onClick={ e => this.handleSort('finishDate')}>
+                Finish Project
             </Table.HeaderCell>
             <Table.HeaderCell>Actions</Table.HeaderCell>
         </Table.Row>
@@ -213,15 +223,24 @@ export class ProjectTable extends Component {
                 index: index + 1,
                 name: project.name,
                 managers: this.getStringNameOfManagers(project.managers),
-                startDate: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : '',
-                startProject: (
+                startDate: {key: index+2, content: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : ''},
+                finishDate: {key: index+3, content: project.finishDate ? moment(project.finishDate).format('YYYY-MM-DD') : ''},
+                finishProject: (
                     <Table.Cell key={ index + 4 }>
-                        <Button color={!!project.startDate ? 'blue' : 'green'}
+                        {/*Projects now will start automatically when cerated, but some may be still not started before update*/}
+                        { !!project.startDate
+                            ? <Button color={!!project.finishDate ? 'blue' : 'red'}
                                 style={{width: '90px'}}
                                 inverted
-                                content={!!project.startDate ? 'Started' : 'Start'}
-                                disabled={!!project.startDate}
-                                onClick={ () => this.startProject(project._id) }/>
+                                content={!!project.finishDate ? 'Finished' : 'Finish'}
+                                disabled={!!project.finishDate}
+                                onClick={ () => this.changeProjectStatus(project._id, 'finishDate') }/>
+                            : <Button color='green'
+                                style={{width: '90px'}}
+                                inverted
+                                content='Start'
+                                onClick={ () => this.changeProjectStatus(project._id, 'startDate') }/>
+                        }
                     </Table.Cell>
                 ),
                 actions: (
@@ -248,14 +267,15 @@ export class ProjectTable extends Component {
         : 'No managers assigned for this project'
     );
 
-    renderProjectsTable = ({ index, name, managers, startDate, startProject, actions }) => ({
+    renderProjectsTable = ({ index, name, managers, startDate, finishDate, finishProject, actions }) => ({
         key: index,
         cells: [
             index,
             name,
             managers,
             startDate,
-            startProject,
+            finishDate,
+            finishProject,
             actions
         ]
     });
