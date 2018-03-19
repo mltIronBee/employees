@@ -331,10 +331,11 @@ export class ProjectTable extends Component {
         const managers = [];
         
         this.state.projects.forEach( project => {
-            project.managers.forEach( manager => {
-                if(!managers.includes(`${manager.firstName} ${manager.lastName}`))
-                    managers.push(`${manager.firstName} ${manager.lastName}`);
-            });
+            if(project.managers)
+                project.managers.forEach( manager => {
+                    if(!managers.includes(`${manager.firstName} ${manager.lastName}`))
+                        managers.push(`${manager.firstName} ${manager.lastName}`);
+                });
         });
 
         managers.forEach( (manager, index) => {
@@ -366,10 +367,12 @@ export class ProjectTable extends Component {
 
     filterTable = () => {
         const filtered = this.state.projects
-            .filter( project => 
-                project.managers.filter( manager => 
-                    manager.firstName === this.state.firstName
-                    && manager.lastName === this.state.lastName ).length > 0
+            .filter( project => {
+                if( project.managers )
+                    return project.managers.filter( manager => 
+                        manager.firstName === this.state.firstName
+                        && manager.lastName === this.state.lastName ).length > 0
+                }
             );
 
         this.setState({ filtered });
