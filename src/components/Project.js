@@ -7,6 +7,7 @@ import { Notification } from './Notification';
 import { AddEmployeePopup } from "./AddEmployeePopup";
 import AddPMPopup from './AddPMPopup';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
+import ProjectSmallTable from './ProjectSmallTable';
 
 export class Project extends Component {
 
@@ -90,6 +91,23 @@ export class Project extends Component {
         </div>
     );
 
+    managersData = () => {
+        return this.state.projectManagers.map( (manager) => (
+            [{
+                width: 6,
+                item: `${manager.firstName} ${manager.lastName}`
+            },
+            {
+                width: 1,
+                item: (<Icon name='delete'
+                            size='large'
+                            link
+                            color='red'
+                            onClick={ () => { this.setState({ isModalOpened: 0b10, currentManagerId: manager._id }) } } />)
+            }])
+        )
+    }
+
     renderManagersData = () => {
         return this.state.projectManagers.length
             ? this.state.projectManagers.map(( manager, index ) => (
@@ -102,7 +120,7 @@ export class Project extends Component {
                                 size='large'
                                 link
                                 color='red'
-                                onClick={ () => { this.setState({ isModalOpened: 2, currentManagerId: manager._id })} } />
+                                onClick={ () => { this.setState({ isModalOpened: 0b10, currentManagerId: manager._id })} } />
                         </Table.Cell>
                     }
                 </Table.Row>
@@ -367,7 +385,9 @@ export class Project extends Component {
                                 { this.state.activeItem === 'personel' &&
                                     <div>
                                         <label>Project Managers</label>
-                                        { this.getTable(this.state.projectManagers, this.renderManagersData) }
+                                        <ProjectSmallTable 
+                                            tableBody={this.managersData()}
+                                            bodyFallback='No project managers has been assigned to this project<' />
                                         <br />
                                         <label>Employees</label>
                                         { this.getTable(this.state.projectEmployees, this.renderEmployeesData) }

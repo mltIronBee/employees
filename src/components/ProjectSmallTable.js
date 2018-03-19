@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table } from 'semantic-ui-react';
 
-export default const ProjectSmallTable = (props) => {
+const ProjectSmallTable = (props) => {
 	const { startDate, finishDate, tableHeaders, tableBody, tableFooters, bodyFallback } = props;
 	
 	return (
@@ -24,12 +24,13 @@ export default const ProjectSmallTable = (props) => {
 					{ tableBody.length
 						? tableBody.map( (row, index) =>
 							<Table.Row key={index}>
-								{ row.map( (cell, j) ) =>
+								<Table.Cell width={2}>{index+1}</Table.Cell>
+								{ row.map( (cell, j)  =>
 									<Table.Cell 
 										key={j}
 										width={cell.width} >
 										{cell.item}
-									</Table.Cell>
+									</Table.Cell>)
 								}
 							</Table.Row>)
 						: <Table.Row>
@@ -52,3 +53,5 @@ export default const ProjectSmallTable = (props) => {
 		</div>
 	);
 };
+
+export default ProjectSmallTable;
