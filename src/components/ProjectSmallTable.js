@@ -11,7 +11,7 @@ const ProjectSmallTable = (props) => {
 			fixed
 			size='small'
 			color='blue'>
-				{ tableHeaders.length &&
+				{ tableHeaders && tableHeaders.length &&
 					<Table.Header>
 						<Table.Row>
 							{ tableHeaders.map( (header, index) =>
@@ -21,16 +21,19 @@ const ProjectSmallTable = (props) => {
 					</Table.Header>
 				}
 				<Table.Body>
-					{ tableBody.length
+					{ tableBody && tableBody.length
 						? tableBody.map( (row, index) =>
 							<Table.Row key={index}>
 								<Table.Cell width={2}>{index+1}</Table.Cell>
-								{ row.map( (cell, j)  =>
-									<Table.Cell 
-										key={j}
-										width={cell.width} >
-										{cell.item}
-									</Table.Cell>)
+								{ row.map( (cell, j)  => {
+										const { item, ...rest } = cell;
+										return (
+											<Table.Cell 
+												key={j}
+												{...rest} >
+												{item}
+											</Table.Cell>)
+									})
 								}
 							</Table.Row>)
 						: <Table.Row>
@@ -39,7 +42,7 @@ const ProjectSmallTable = (props) => {
 					}
 				</Table.Body>
 				<Table.Footer fullWidth>
-					{ tableFooters.length &&
+					{ tableFooters && tableFooters.length &&
 						<Table.Row>
 							{ tableFooters.map( (item, index) => 
 								<Table.HeaderCell key={index}>

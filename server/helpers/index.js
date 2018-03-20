@@ -17,12 +17,19 @@ export const calculateProjectSummary = (project, employees, date) => {
 					|| proj.finishDate && proj.finishDate.getTime() >= project.startDate.getTime()))
 		, '_id')
 	});
+
 	//Alright, this thing requires some explanations. We need to build array
 	//of key dates of all projects. Those key dates are projects start date and finish date
 	//We put them together in one array, sort them (ascending) and filter from duplicates
+	//The idea of startOf('day') and endOf('day') is that project always starts at 00:00 and
+	//finished at 23:59, because we have flexible work schedule and precise man-hours cannot
+	//be calculated without additional info, which is hard to maintain. Thus between project start
+	//and project finish is minimum 1 day, and calculations have acceptable accuracy
 	const breakpoints = employeeCurrentProjects.map(projects =>
 		_.sortedUniqBy(
 			_.dropWhile(
+				//TODO: instead of project.startDate insert day, when employee started working on this project
+				//TODO: if employee stopped working on project prematurely, filter all breakpoints after it's date
 				[moment(project.startDate).startOf('day'), moment(date).endOf('day'),
 				...projects.reduce( (prevProject, curProject) => {
 					return curProject.finishDate
@@ -34,11 +41,14 @@ export const calculateProjectSummary = (project, employees, date) => {
 			)
 		, item => item.format())
 	);
+
 	let totalWorkHours, divider, hoursPerProject;
 	const obj = {};
+
 	//Later, we inspect pairs of consecutive breakpoints and check how any projects were active
 	//in that period of time. Each active project increases divider by 1
 	const summary = employeeCurrentProjects.map( (projects, i) => {
+		obj.employeeName = `${employees[i].firstName} ${employees[i].lastName}`
 		totalWorkHours=0;
 		for( let j = 0; j < breakpoints[i].length - 1; j++) {
 			divider = 1;
@@ -51,7 +61,7 @@ export const calculateProjectSummary = (project, employees, date) => {
 		obj.totalWorkHours = prettyPrintDecimals(totalWorkHours);
 		hoursPerProject = SINGLE_PROJECT_WORKHOURS/employees[i].projects.length;
 		if(!project.finishDate)
-			obj.hoursPerProject = `${prettyPrintDecimals(hoursPerProject)} hours/day`;
+			obj.hoursPerProject = prettyPrintDecimals(hoursPerProject);
 
 		return Object.assign({}, obj);
 	})
@@ -60,7 +70,7 @@ export const calculateProjectSummary = (project, employees, date) => {
 }
 
 const prettyPrintDecimals = value =>
-	Math.trunc(value) === value ? value : value.toFixed(2)
+	Math.trunc(value) === value ? value : +value.toFixed(2)
 
 //Function to check project status between given period of time
 //(from left to right). Project is active if it's started earlier (or

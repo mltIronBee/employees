@@ -71,7 +71,8 @@ export class Project extends Component {
             finishDate: project.finishDate || '',
             allEmployees,
             projectManagers: !!project.managers ? project.managers : [],
-            allManagers
+            allManagers,
+            summary: project.summary
         })
     };
 
@@ -91,61 +92,79 @@ export class Project extends Component {
         </div>
     );
 
-    managersData = () => {
-        return this.state.projectManagers.map( (manager) => (
+    renderManagersData = () => {
+        return this.state.projectManagers.map( manager => (
             [{
                 width: 6,
                 item: `${manager.firstName} ${manager.lastName}`
             },
             {
                 width: 1,
-                item: (<Icon name='delete'
+                item: !this.state.finishDate && (<Icon name='delete'
                             size='large'
                             link
                             color='red'
                             onClick={ () => { this.setState({ isModalOpened: 0b10, currentManagerId: manager._id }) } } />)
             }])
         )
-    }
-
-    renderManagersData = () => {
-        return this.state.projectManagers.length
-            ? this.state.projectManagers.map(( manager, index ) => (
-                <Table.Row key={index}>
-                    <Table.Cell width={2}>{index+1}</Table.Cell>
-                    <Table.Cell width={6}>{`${manager.firstName} ${manager.lastName}`}</Table.Cell>
-                    { !this.state.finishDate &&
-                        <Table.Cell width={1}>
-                            <Icon name='delete'
-                                size='large'
-                                link
-                                color='red'
-                                onClick={ () => { this.setState({ isModalOpened: 0b10, currentManagerId: manager._id })} } />
-                        </Table.Cell>
-                    }
-                </Table.Row>
-            ))
-            : <Table.Row><Table.Cell>No project managers has been assigned to this project</Table.Cell></Table.Row>
     };
 
     renderEmployeesData = () => {
-        return this.state.projectEmployees.length
-            ? this.state.projectEmployees.map((employee, index) => (
-                <Table.Row key={index}>
-                    <Table.Cell width={2}>{index + 1}</Table.Cell>
-                    <Table.Cell width={6}>{`${employee.firstName} ${employee.lastName}`}</Table.Cell>
-                    {   !this.state.finishDate &&
-                        <Table.Cell width={1}>
-                            <Icon name="delete"
-                                size="large"
-                                link
-                                color="red"
-                                onClick={ () => { this.setState({ isModalOpened: 1, currentEmployeeId: employee._id })} } />
-                        </Table.Cell>
-                    }
-                </Table.Row>
-            ))
-            : <Table.Row><Table.Cell>No employees yet</Table.Cell></Table.Row>
+        return this.state.projectEmployees.map( employee => (
+            [{
+                width: 6,
+                item: `${employee.firstName} ${employee.lastName}`
+            }, {
+                width: 1,
+                item: !this.state.finishDate && (<Icon name="delete"
+                    size="large"
+                    link
+                    color="red"
+                    onClick={ () => { this.setState({ isModalOpened: 0b01, currentEmployeeId: employee._id })} } />)
+            }])
+        )
+    };
+
+    summaryHeader = () => (
+        !!this.state.finishDate
+        ? ['#', 'Employee Name', 'Total man-hours']
+        : ['#', 'Employee Name', 'Tracking', 'Total man-hours']
+    );
+
+    renderSummaryData = () => {
+        return this.state.summary.map( info => (
+            !!this.state.finishDate
+            ?   [{
+                    width: 6,
+                    item: info.employeeName
+                }, {
+                    width: 2,
+                    item: `${info.totalWorkHours} hours`
+                }]
+            :   [{
+                    width: 6,
+                    item: info.employeeName
+                }, {
+                    width: 2,
+                    item: `${info.hoursPerProject} hours/day`
+                }, {
+                    width: 2,
+                    item: `${info.totalWorkHours} hours`
+                }]
+        ));
+    };
+
+    summaryFooter = () => {
+        let totalHoursPerDay = 0, totalHours = 0;
+        this.state.summary.forEach( info => {
+            totalHours += info.totalWorkHours;
+            if( !this.state.finishDate )
+                totalHoursPerDay += info.hoursPerProject;
+        });
+        const footer = ['', 'Totals:', `${totalHours} man-hours`];
+        if (!this.state.finishDate)
+            footer.splice(2, 0, `${totalHoursPerDay} man-hours/day`)
+        return footer;
     };
 
     //getting rid of preparedEmployers in order to avoid code duplication
@@ -386,17 +405,24 @@ export class Project extends Component {
                                     <div>
                                         <label>Project Managers</label>
                                         <ProjectSmallTable 
-                                            tableBody={this.managersData()}
+                                            tableBody={this.renderManagersData()}
                                             bodyFallback='No project managers has been assigned to this project<' />
                                         <br />
                                         <label>Employees</label>
-                                        { this.getTable(this.state.projectEmployees, this.renderEmployeesData) }
+                                        <ProjectSmallTable 
+                                            tableBody={this.renderEmployeesData()}
+                                            bodyFallback='No employees yet' />
                                     </div>
                                 }
                                 {
                                     this.state.activeItem === 'summary' &&
                                     <div>
                                         <label>Project summary</label>
+                                        <ProjectSmallTable 
+                                            tableBody={this.renderSummaryData()}
+                                            bodyFallback='Cannot get project summary'
+                                            tableHeaders={this.summaryHeader()}
+                                            tableFooters={this.summaryFooter()} />
                                     </div>
                                 }
                             </Form.Field>
