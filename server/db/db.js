@@ -12,7 +12,7 @@ export const findByLogin = login => {
     return User.findOne({ login });
 };
 
-export const initializeDb = () =>
+export const initializeDb = () => {
     findByLogin('admin')
         .then(user => !user
             ? new User({
@@ -24,6 +24,27 @@ export const initializeDb = () =>
             }).save()
             : user
         );
+
+    //Run this to clear outdated managers data from database
+    //TODO: remove this entirely, when the dust settles
+    Project
+        .find()
+        .exec()
+        .then( projects => {
+            projects.forEach( project => {
+                project.managers && project.managers.forEach( manager => {
+                User.findById(manager)
+                    .exec()
+                    .then( user => {
+                        if (user) {
+                            project.managers = project.managers.filter( pm => pm !== manager );
+                            return Promise.resolve(project.save());
+                        }
+                    })
+                })
+            })
+        })
+}
 
 export const getAllUsers = adminLogin =>
     User
@@ -169,30 +190,31 @@ export const getProjectsWithEmployees = () =>
 export const getEmployeesForProject = projectId =>
     Employee.find( { projects: { $nin: [ projectId ] } } ).exec();
 
-export const getManagersForProject = (project, adminLogin) => {
-    return User
+export const getManagersForProject = project => {
+    return Employee
         .find()
         .lean()
         .exec()
-        .then(users => {
-            const list = project && project.managers
-            ? users.filter(user => {
-                delete user.password;
-                return user.login !== adminLogin &&
-                !project.managers.map( pm => pm.login ).includes(user.login);
-            })
-            : users.filter( user => {
-                delete user.password;
-                return user.login !== adminLogin
-            })
+        .then(employees => {
+            const list = project.managers && project.managers.length
+            ? employees.filter( employee => {
+                return isProjectManager(employee)
+                && !project.managers.map( pm =>  pm._id.toString() ).includes(employee._id.toString())}
+            )
+            : employees.filter( employee => 
+                isProjectManager(employee)
+            )
 
             return list;
         });
 }
 
+export const isProjectManager = employee =>
+    employee && employee.position.toLowerCase().includes("project manager")
+
 export const getProjectById = id =>
     Project.findById(id)
-        .populate('managers', '_id login firstName lastName')
+        .populate('managers', '_id firstName lastName')
         .lean()
         .exec()
         .then(project => {
@@ -208,17 +230,16 @@ export const getProjectById = id =>
         })
         .catch(console.log);
 
-export const getProjectByIdWithEmployees = (projectId, adminLogin) =>
+export const getProjectByIdWithEmployees = projectId =>
     Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
         .then(([ project, allEmployees ]) => 
-            Promise.all( [project, allEmployees, getManagersForProject(project, adminLogin)] ))
+            Promise.all( [project, allEmployees.filter( e => !isProjectManager(e) ), getManagersForProject(project)] ))
         .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees, allManagers }));
 
-export const getAllEmployeesForProject = (adminLogin) =>
+export const getAllEmployeesForProject = () =>
     Promise.all([
-        Employee.find().lean().exec(),
-        getAllUsers(adminLogin)])
-    .then( ([allEmployees, allManagers]) => ({allEmployees, allManagers}) );
+        Employee.find().lean().exec()])
+    .then( ([allEmployees]) => ({allEmployees: allEmployees.filter( e => !isProjectManager(e) ), allManagers: allEmployees.filter( e => isProjectManager(e) )}) );
 
 export const getEmployeesCurrentProjects = (projectId, date) => {
     Projects.findById(projectId)

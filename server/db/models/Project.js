@@ -9,7 +9,7 @@ const ProjectSchema = new Schema({
 
     managers: [{
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Employee'
     }],
 
     startDate: {

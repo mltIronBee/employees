@@ -262,7 +262,7 @@ export class ProjectTable extends Component {
     };
 
     getStringNameOfManagers = managers => (
-        managers
+        managers && managers.length
         ? managers.map( manager => `${manager.firstName} ${manager.lastName}` ).join(', ')
         : 'No managers assigned for this project'
     );
@@ -372,8 +372,9 @@ export class ProjectTable extends Component {
                     return project.managers.filter( manager => 
                         manager.firstName === this.state.firstName
                         && manager.lastName === this.state.lastName ).length > 0
-                }
-            );
+                return false;
+            }
+        );
 
         this.setState({ filtered });
     }
