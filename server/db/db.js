@@ -226,11 +226,11 @@ export const getProjectById = id =>
 export const getProjectByIdWithEmployees = projectId =>
     Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
         .then(([ project, allEmployees ]) => 
-            Promise.all( [project, allEmployees, getManagersForProject(project)] ))
+            Promise.all( [project, allEmployees.filter( e => !isProjectManager(e) ), getManagersForProject(project)] ))
         .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees, allManagers }));
 
 export const getAllEmployeesForProject = () =>
     Promise.all([
         Employee.find().lean().exec()])
-    .then( ([allEmployees]) => ({allEmployees, allManagers: allEmployees.filter( e => isProjectManager(e) )}) );
+    .then( ([allEmployees]) => ({allEmployees: allEmployees.filter( e => !isProjectManager(e) ), allManagers: allEmployees.filter( e => isProjectManager(e) )}) );
 
