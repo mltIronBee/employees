@@ -3,8 +3,9 @@ import moment from 'moment';
 
 const SINGLE_PROJECT_WORKHOURS = 8;
 
-export const calculateProjectSummary = (project, employees, date) => {
+export const calculateProjectSummary = (project, employees) => {
 	const projectId = String(project._id);
+	const date = project.finishDate ? moment(project.finishDate) : moment().startOf('day');
 	//uniqBy for case, if somehow database was messed up and employee have duplicating project
 	//in projectsHistory
 	const employeeCurrentProjects = employees.map(employee => {
@@ -12,8 +13,8 @@ export const calculateProjectSummary = (project, employees, date) => {
 			employee.projectsHistory.filter(proj => 
 				String(proj._id) !== projectId &&
 				!!project.startDate && !!proj.startDate
-				&& (project.finishDate && project.finishDate.getTime() > date.getTime() 
-					|| !project.finishDate && proj.startDate.getTime() < date.getTime()
+				&& (project.finishDate && project.finishDate.getTime() > date.millisecond()
+					|| !project.finishDate && proj.startDate.getTime() < date.millisecond()
 					|| proj.finishDate && proj.finishDate.getTime() >= project.startDate.getTime()))
 		, '_id')
 	});
@@ -32,7 +33,7 @@ export const calculateProjectSummary = (project, employees, date) => {
 				_.dropWhile(
 					//TODO: instead of project.startDate insert day, when employee started working on this project
 					//TODO: if employee stopped working on project prematurely, filter all breakpoints after it's date
-					[moment(project.startDate).startOf('day'), moment(date).endOf('day'),
+					[moment(project.startDate).startOf('day'), moment(date),
 					...projects.reduce( (prevProject, curProject) => {
 						return curProject.finishDate
 						? prevProject.concat([moment(curProject.startDate).startOf('day'), moment(curProject.finishDate).endOf('day')])

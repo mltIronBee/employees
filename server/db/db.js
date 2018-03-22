@@ -202,7 +202,7 @@ export const getProjectById = id =>
         })
         .then(([ project, employees, populatedEmployees ]) => {
             project.employees = employees;
-            project.summary = calculateProjectSummary(project, populatedEmployees, project.finishDate ? project.finishDate : new Date());
+            project.summary = calculateProjectSummary(project, populatedEmployees);
             return project
         })
         .catch(console.log);
