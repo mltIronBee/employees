@@ -2,7 +2,7 @@ import React from 'react';
 import { Table } from 'semantic-ui-react';
 
 const ProjectSmallTable = (props) => {
-	const { startDate, finishDate, tableHeaders, tableBody, tableFooters, bodyFallback } = props;
+	const { tableHeaders, tableBody, tableFooters, bodyFallback } = props;
 	
 	return (
 		<div className={tableBody.length > 10 ? 'table-body-projects' : ''} >

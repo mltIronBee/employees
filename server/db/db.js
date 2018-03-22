@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { dbConfig } from '../../config';
 import { User } from './models/User';
 import { Employee } from './models/Employee';
-import { Project } from './models/Project';
+import { Project } from "./models/Project";
 import { calculateProjectSummary } from '../helpers';
 
 export const setUpConnection = () =>
@@ -12,7 +12,7 @@ export const findByLogin = login => {
     return User.findOne({ login });
 };
 
-export const initializeDb = () => {
+export const initializeDb = () => 
     findByLogin('admin')
         .then(user => !user
             ? new User({
@@ -25,26 +25,6 @@ export const initializeDb = () => {
             : user
         );
 
-    //Run this to clear outdated managers data from database
-    //TODO: remove this entirely, when the dust settles
-    Project
-        .find()
-        .exec()
-        .then( projects => {
-            projects.forEach( project => {
-                project.managers && project.managers.forEach( manager => {
-                User.findById(manager)
-                    .exec()
-                    .then( user => {
-                        if (user) {
-                            project.managers = project.managers.filter( pm => pm !== manager );
-                            return Promise.resolve(project.save());
-                        }
-                    })
-                })
-            })
-        })
-}
 
 export const getAllUsers = adminLogin =>
     User
@@ -128,9 +108,8 @@ export const getEmployeeById = id =>
             Object.assign({}, data, { employee })
         );
 
-export const updateEmployeeData = (id, data) => {
-        console.log(data)
-        return Employee.findByIdAndUpdate(id, {
+export const updateEmployeeData = (id, data) =>
+    Employee.findByIdAndUpdate(id, {
         $set: {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -144,7 +123,6 @@ export const updateEmployeeData = (id, data) => {
             available: data.available
         }
     });
-}
 
 export const deleteEmployee = id =>
     Employee.findByIdAndRemove(id);
@@ -152,9 +130,8 @@ export const deleteEmployee = id =>
 export const createProject = data =>
     (new Project(data)).save();
 
-export const updateProjectData = (id, data) => 
+export const updateProjectData = (id, data) =>
     Project.findByIdAndUpdate(id, { $set: data });
-
 
 export const deleteProject = id =>
     Project.findByIdAndRemove(id);
@@ -218,15 +195,15 @@ export const getProjectById = id =>
         .lean()
         .exec()
         .then(project => {
-            const query = Employee.find( !!project.finishDate ? { projectsHistory: project._id } : { projects:  project._id});
+            const query = Employee.find( project.finishDate ? { projectsHistory: project._id } : { projects:  project._id});
             const employees = query.exec();
             const populatedEmployees = query.populate('projectsHistory', '_id startDate finishDate').exec();
-            return Promise.all([ project, employees, populatedEmployees ]);
+            return Promise.all([ project, employees, populatedEmployees ])
         })
         .then(([ project, employees, populatedEmployees ]) => {
             project.employees = employees;
-            project.summary = calculateProjectSummary(project, populatedEmployees, !!project.finishDate ? project.finishDate : new Date());
-            return project;
+            project.summary = calculateProjectSummary(project, populatedEmployees, project.finishDate ? project.finishDate : new Date());
+            return project
         })
         .catch(console.log);
 
@@ -241,11 +218,3 @@ export const getAllEmployeesForProject = () =>
         Employee.find().lean().exec()])
     .then( ([allEmployees]) => ({allEmployees: allEmployees.filter( e => !isProjectManager(e) ), allManagers: allEmployees.filter( e => isProjectManager(e) )}) );
 
-export const getEmployeesCurrentProjects = (projectId, date) => {
-    Projects.findById(projectId)
-        .lean()
-        .exec()
-        .then(project => {
-
-        })
-}

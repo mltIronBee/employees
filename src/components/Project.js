@@ -8,7 +8,7 @@ import { AddEmployeePopup } from "./AddEmployeePopup";
 import AddPMPopup from './AddPMPopup';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
 import ProjectSmallTable from './ProjectSmallTable';
-
+import moment from 'moment';
 export class Project extends Component {
 
     state = {
@@ -73,7 +73,7 @@ export class Project extends Component {
             projectManagers: !!project.managers ? project.managers : [],
             allManagers,
             summary: project.summary
-        })
+        });
     };
 
     //Getting rid of getEmployeesTable due to necessity to duplicate code for
@@ -229,7 +229,7 @@ export class Project extends Component {
         data.append('image', employee.imageSrc);
         employee.skills.forEach(skill => data.append('skills[]', skill));
         employee.projects.forEach(project => data.append('projects[]', project));
-        employee.projectsHistory.forEach(project => data.append('projectsHistory[]', project._id));
+        employee.projectsHistory.forEach(project => data.append('projectsHistory[]', project));
 
         return http.post(requestUrl, data)
     };
@@ -284,8 +284,8 @@ export class Project extends Component {
         if(!name) return this.notification.show('Project name must be required!', 'danger');
         if(!projectManagers.length) return this.notification.show('Project must have at least one project manager', 'danger');
         const obj = { name, managers: projectManagers };
-        if (!isCreating) obj._id = id;
-
+        if (!isCreating) { obj._id = id; }
+        else { obj.startDate = new Date(); }
         http.post(requestUrl, obj)
             .then(({data}) =>
                 Promise.all([
@@ -305,6 +305,32 @@ export class Project extends Component {
     };
 
     handleTabClick = (e, {name}) => this.setState({ activeItem: name });
+
+    parseSummaryData = () => {
+        if ( this.state.summary ) {
+            const parsed = this.state.summary.map( report => {
+                const dates = [];
+                const hoursPerProject = [];
+                for( let i = 0; i < report.details.length; i++ ) {
+                    const detail = report.details[i];
+                    const rightDate = detail.rightDate !== 'skip' ? moment(detail.rightDate) : moment(report.details[i+1].leftDate);
+                    const skipping = detail.rightDate === 'skip';
+                    let leftDate = moment(detail.leftDate);
+                    let daysBetween = rightDate.diff(leftDate, 'days');
+                    while( daysBetween > 0 ) {
+                        dates.push(moment(leftDate).format('YYYY-MM-DD'));
+                        skipping ? hoursPerProject.push(0) : hoursPerProject.push(detail.hoursPerProject);
+                        leftDate.add(1, 'd');
+                        daysBetween = rightDate.diff(leftDate, 'days');
+                    }
+                }
+                return { id: report.employeeName, xVal: dates, yVal: hoursPerProject };
+            });
+            return parsed;
+        }
+
+        return [];
+    };
 
     componentWillUnmount() {
         document.removeEventListener('keyup', this.onModalActions);
@@ -395,11 +421,11 @@ export class Project extends Component {
                                         onClick={this.handleTabClick} >
                                         Presonel
                                     </Menu.Item>
-                                    <Menu.Item name='summary'
+                                    {!this.state.isCreating && <Menu.Item name='summary'
                                         active={this.state.activeItem === 'summary'}
                                         onClick={this.handleTabClick} >
                                         Summary
-                                    </Menu.Item>
+                                    </Menu.Item>}
                                 </Menu>
                                 { this.state.activeItem === 'personel' &&
                                     <div>
