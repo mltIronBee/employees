@@ -3,6 +3,7 @@ import { dbConfig } from '../../config';
 import { User } from './models/User';
 import { Employee } from './models/Employee';
 import { Project } from "./models/Project";
+import { calculateProjectSummary } from '../helpers';
 
 export const setUpConnection = () =>
     mongoose.connect(`mongodb://${dbConfig.host}:${dbConfig.port}/${dbConfig.name}`);
@@ -11,7 +12,7 @@ export const findByLogin = login => {
     return User.findOne({ login });
 };
 
-export const initializeDb = () => {
+export const initializeDb = () => 
     findByLogin('admin')
         .then(user => !user
             ? new User({
@@ -24,26 +25,6 @@ export const initializeDb = () => {
             : user
         );
 
-    //Run this to clear outdated managers data from database
-    //TODO: remove this entirely, when the dust settles
-    Project
-        .find()
-        .exec()
-        .then( projects => {
-            projects.forEach( project => {
-                project.managers && project.managers.forEach( manager => {
-                User.findById(manager)
-                    .exec()
-                    .then( user => {
-                        if (user) {
-                            project.managers = project.managers.filter( pm => pm !== manager );
-                            return Promise.resolve(project.save());
-                        }
-                    })
-                })
-            })
-        })
-}
 
 export const getAllUsers = adminLogin =>
     User
@@ -214,11 +195,14 @@ export const getProjectById = id =>
         .lean()
         .exec()
         .then(project => {
-            const employees = Employee.find({ projects:  project._id}).exec();
-            return Promise.all([ project, employees ])
+            const query = Employee.find( project.finishDate ? { projectsHistory: project._id } : { projects:  project._id});
+            const employees = query.exec();
+            const populatedEmployees = query.populate('projectsHistory', '_id startDate finishDate').exec();
+            return Promise.all([ project, employees, populatedEmployees ])
         })
-        .then(([ project, employees ]) => {
+        .then(([ project, employees, populatedEmployees ]) => {
             project.employees = employees;
+            project.summary = calculateProjectSummary(project, populatedEmployees);
             return project
         })
         .catch(console.log);
