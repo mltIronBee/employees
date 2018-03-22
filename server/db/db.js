@@ -147,7 +147,7 @@ export const getProjectsWithEmployees = () =>
         .then(projects => {
             const projectsEmployeesQuery = [];
             projects.forEach(project => {
-                const employees = Employee.find({ projects: project._id }).exec();
+                const employees = Employee.find( project.finishDate ? { projectsHistory: project._id } : { projects: project._id }).exec();
                 projectsEmployeesQuery.push(Promise.all([project, employees]))
             });
 

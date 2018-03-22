@@ -7,6 +7,7 @@ import http from '../helpers/http';
 import { apiPrefix } from '../../config';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
 import { LoaderComponent } from './Loader';
+import { UserPopup } from './UserPopup';
 
 export class ProjectTable extends Component {
     state = {
@@ -18,8 +19,10 @@ export class ProjectTable extends Component {
         fieldsPerPage: +localStorage.getItem('fieldsPerPage') || 10,
         column: '',
         direction: '',
-        firstName: '',
-        lastName: '',
+        managerFirstName: '',
+        managerLastName: '',
+        employeeFirstName: '',
+        employeeLastName: '',
         filtered: []
     };
 
@@ -198,6 +201,11 @@ export class ProjectTable extends Component {
                 onClick={ e => this.handleSort('managers') } >
                 Project Managers
             </Table.HeaderCell>
+            <Table.HeaderCell 
+                sorted={this.state.column === 'employees' ? this.state.direction : null}
+                onClick={ e => this.handleSort('employees') } >
+                Project Employees
+            </Table.HeaderCell>
             <Table.HeaderCell
                 sorted={this.state.column === 'startDate' ? this.state.direction : null}
                 onClick={ e => this.handleSort('startDate')}>
@@ -222,11 +230,12 @@ export class ProjectTable extends Component {
             ? projects.map((project, index) => ({
                 index: index + 1,
                 name: project.name,
-                managers: this.getStringNameOfManagers(project.managers),
-                startDate: {key: index+2, content: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : ''},
-                finishDate: {key: index+3, content: project.finishDate ? moment(project.finishDate).format('YYYY-MM-DD') : ''},
+                managers: {key: index+2, content: this.getStringNameOfManagers(project.managers)},
+                employees: {key: index+3, content: this.getStringNameOfEmployees(project.employees)},
+                startDate: {key: index+4, content: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : ''},
+                finishDate: {key: index+5, content: project.finishDate ? moment(project.finishDate).format('YYYY-MM-DD') : ''},
                 finishProject: (
-                    <Table.Cell key={ index + 4 }>
+                    <Table.Cell key={ index + 6 }>
                         {/*Projects now will start automatically when cerated, but some may be still not started before update*/}
                         { !!project.startDate
                             ? <Button color={!!project.finishDate ? 'blue' : 'red'}
@@ -244,7 +253,7 @@ export class ProjectTable extends Component {
                     </Table.Cell>
                 ),
                 actions: (
-                    <Table.Cell key={ index + 5 }>
+                    <Table.Cell key={ index + 7 }>
                         <Link to={{ pathname: '/project', query: { id: project._id } }}>
                             <Icon name="edit"
                                   size="large"
@@ -263,16 +272,49 @@ export class ProjectTable extends Component {
 
     getStringNameOfManagers = managers => (
         managers && managers.length
-        ? managers.map( manager => `${manager.firstName} ${manager.lastName}` ).join(', ')
-        : 'No managers assigned for this project'
+        ? managers.map( (manager, i) => (
+            <span key={manager._id}>
+                <Link to={{ pathname: '/profile', query: { id: manager._id }, state: {from: 'projects'} }} >
+                    {`${manager.firstName} ${manager.lastName}`}
+                </Link>
+                { i < managers.length-1 && ', ' }
+            </span>))
+        : 'No managers have been assigned for this project'
     );
 
-    renderProjectsTable = ({ index, name, managers, startDate, finishDate, finishProject, actions }) => ({
+    getStringNameOfEmployees = employees => (
+        employees && employees.length
+        ? employees.map( (employee, i) => (
+            <span key={employee._id} >
+                <UserPopup user={ employee }
+                    projects={this.getStringOfNameProjects(employee.projects)}
+                    trigger={
+                        <Link to={{ pathname: '/profile', query: { id: employee._id }, state: {from: 'projects'} }} >
+                            {`${employee.firstName} ${employee.lastName}`}
+                        </Link> } />
+                { i < employees.length-1 && ', ' }
+            </span>)
+        )
+        : 'No employees have been assigned for this project'
+    );
+
+    getStringOfNameProjects = projects => {
+        const res = [];
+        projects.forEach( id => {
+            const item = this.state.projects.find( project => 
+                project._id === id )
+            item && res.push(item.name)
+        });
+        return res.join(', ');
+    }
+
+    renderProjectsTable = ({ index, name, managers, employees, startDate, finishDate, finishProject, actions }) => ({
         key: index,
         cells: [
             index,
             name,
             managers,
+            employees,
             startDate,
             finishDate,
             finishProject,
@@ -282,7 +324,7 @@ export class ProjectTable extends Component {
 
     getFooterRow = (
         <Table.Row>
-            <Table.HeaderCell colSpan="7">
+            <Table.HeaderCell colSpan="8">
                 <Dropdown placeholder="Per page"
                 selection
                 value={ this.state.fieldsPerPage }
@@ -305,7 +347,7 @@ export class ProjectTable extends Component {
                     }
                     <Menu.Item icon onClick={ this.onPaginationNext }>
                         <Icon name="right chevron" />
-                    </Menu.Item >
+                    </Menu.Item>
                 </Menu>
             </Table.HeaderCell>
         </Table.Row>
@@ -322,68 +364,77 @@ export class ProjectTable extends Component {
         document.removeEventListener('keyup', this.onModalActions);
     }
 
-    prepareOptions = () => {
+    prepareOptions = field => {
         const options = [{
             text: 'selected none',
             value: '',
             key: 0
         }];
-        const managers = [];
+        const items = [];
         
         this.state.projects.forEach( project => {
-            if(project.managers)
-                project.managers.forEach( manager => {
-                    if(!managers.includes(`${manager.firstName} ${manager.lastName}`))
-                        managers.push(`${manager.firstName} ${manager.lastName}`);
+            if( project[field] ) {
+                project[field].forEach( item => {
+                    items.push(`${item.firstName} ${item.lastName}`)
                 });
-        });
+            }
+        })
 
-        managers.forEach( (manager, index) => {
+        _.uniq(items).forEach( (item, index) => {
             options.push({
-                text: manager,
-                value: manager,
+                text: item,
+                value: item,
                 key: index+1
             });
         });
 
         return options;
-    }
+    };
 
-    dropdownOnChange = (e, {value}) => {
+    dropdownOnChange = (e, {dataKey, value}) => {
         if(value) {
             const [ firstName, lastName ] = value.replace(/\s{1,}/g, ' ').split(' ');
             this.setState({
-                firstName,
-                lastName
+                [`${dataKey}FirstName`]: firstName,
+                [`${dataKey}LastName`]: lastName
             }, this.filterTable);
         }
         else {
             this.setState({
-                firstName: '',
-                lastName: ''
+                [`${dataKey}FirstName`]: '',
+                [`${dataKey}LastName`]: ''
             }, this.filterTable);
         }
-    }
+    };
 
     filterTable = () => {
         const filtered = this.state.projects
-            .filter( project => {
-                if( project.managers )
-                    return project.managers.filter( manager => 
-                        manager.firstName === this.state.firstName
-                        && manager.lastName === this.state.lastName ).length > 0
-                return false;
-            }
-        );
+            .filter( project => 
+                this.filterManagers(project) && this.filterEmployees(project)
+            );
 
         this.setState({ filtered });
+    };
+
+    filterManagers = project => {
+        return this.state.managerFirstName !== '' && this.state.managerLastName
+            ? project.managers && project.managers.length 
+            && project.managers.find( manager => manager.firstName.includes(this.state.managerFirstName) && manager.lastName.includes(this.state.managerLastName))
+            : true
+    };
+
+    filterEmployees = project => {
+        return this.state.employeeFirstName !== '' && this.state.employeeLastName !== ''
+        ? project.employees && project.employees.length
+        && project.employees.find( employee => employee.firstName.includes(this.state.employeeFirstName) && employee.lastName.includes(this.state.employeeLastName) )
+        : true
     }
 
     getProjectsList = () => {
         return this.state.filtered.length
             ? this.state.filtered
             : this.state.projects;
-    }
+    };
 
     render() {
         return (
@@ -395,8 +446,19 @@ export class ProjectTable extends Component {
                               search
                               selection
                               scrolling
-                              options={ this.prepareOptions() }
+                              dataKey={'manager'}
+                              options={ this.prepareOptions('managers') }
                               placeholder='Search Project Manager'
+                              onChange={ this.dropdownOnChange } />
+                    </Grid.Column>
+                    <Grid.Column width={5} floated='left' style={{ marginTop: '40px'}} >
+                        <Dropdown fluid
+                              search
+                              selection
+                              scrolling
+                              dataKey={'employee'}
+                              options={ this.prepareOptions('employees') }
+                              placeholder='Search Employee'
                               onChange={ this.dropdownOnChange } />
                     </Grid.Column>
                     <Grid.Column width={6} floated='right'>

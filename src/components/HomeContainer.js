@@ -398,7 +398,17 @@ export class HomeContainer extends Component {
         }
     };
 
-    getStringOfNameProjects = projects => projects.map(project => project.name).join(', ');
+    getStringOfNameProjects = projects => 
+        projects && projects.length
+        ? projects.map( (project, i) => (
+            <span key={project._id} >
+                <Link to={{ pathname: '/project', query: { id: project._id }, state: {from: 'dashboard', selectedUserId: this.state.selectedUserId } }} >
+                    {project.name}
+                </Link>
+                { i < projects.length-1 && ', ' }
+            </span>)
+        )
+        : ''
 
     renderEmployeesTable = ({ className, index, firstName, lastName, position,
                                 projects, readyForTransition, available, startedAt, actions }) => ({

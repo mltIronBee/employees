@@ -147,16 +147,12 @@ export class Profile extends Component {
 
         http.post(requestUrl, data)
             .then(res => {
-                    this.notification.show('Data is updated');
-                    this.setState({ readOnly: true }, () => {
-                        setTimeout( () => {
-                            browserHistory.push({
-                                pathname: '/',
-                                state: {
-                                    selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : ''
-                                }
-                            });
-                        }, 3000);
+                //this.notification.show('Data is updated');
+                this.setState({ readOnly: true }, () => {
+                        browserHistory.push({
+                            pathname: this.props.location.state && this.props.location.state.from === 'projects' ? '/projects' : '/',
+                            state: { selectedUserId: this.props.location.state && this.props.location.state.from !== 'projects' ? this.props.location.state.selectedUserId : '' }
+                        });
                     });
             })
             .catch(err => {
@@ -284,8 +280,8 @@ export class Profile extends Component {
                                           style={{cursor: "pointer", float: "left"}}
                                           onClick={() => { 
                                             browserHistory.push({
-                                                pathname: '/',
-                                                state: { selectedUserId: this.props.location.state ? this.props.location.state.selectedUserId : '' }
+                                                pathname: this.props.location.state && this.props.location.state.from === 'projects' ? '/projects' : '/',
+                                                state: { selectedUserId: this.props.location.state && this.props.location.state.from !== 'projects' ? this.props.location.state.selectedUserId : '' }
                                             }) 
                                         }}>
                                     </Icon>
