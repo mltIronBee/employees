@@ -232,8 +232,8 @@ export class ProjectTable extends Component {
                 name: project.name,
                 managers: {key: index+2, content: this.getStringNameOfManagers(project.managers)},
                 employees: {key: index+3, content: this.getStringNameOfEmployees(project.employees)},
-                startDate: {key: index+4, content: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : ''},
-                finishDate: {key: index+5, content: project.finishDate ? moment(project.finishDate).format('YYYY-MM-DD') : ''},
+                startDate: {key: index+4, collapsing: true, content: project.startDate ? moment(project.startDate).format('YYYY-MM-DD') : ''},
+                finishDate: {key: index+5, collapsing: true, content: project.finishDate ? moment(project.finishDate).format('YYYY-MM-DD') : ''},
                 finishProject: (
                     <Table.Cell key={ index + 6 }>
                         {/*Projects now will start automatically when cerated, but some may be still not started before update*/}
@@ -252,7 +252,7 @@ export class ProjectTable extends Component {
                         }
                     </Table.Cell>
                 ),
-                actions: (
+                actions: {collapsing: true, content: (
                     <Table.Cell key={ index + 7 }>
                         <Link to={{ pathname: '/project', query: { id: project._id } }}>
                             <Icon name="edit"
@@ -265,7 +265,7 @@ export class ProjectTable extends Component {
                               color="red"
                               onClick={ () => { this.setState({ isModalOpened: true, currentProjectId: project._id })} } />
                     </Table.Cell>
-                )
+                )}
             }))
             : [{ index: 'No projects yet' }]
     };
@@ -475,8 +475,7 @@ export class ProjectTable extends Component {
                                          onDelete={ this.onProjectDelete }
                                          entity='project'/>
                     <Grid.Column width={16}>
-                        <Table singleLine
-                               sortable
+                        <Table sortable
                                compact
                                color="blue"
                                headerRow={ this.getProjectsHeaderRowForTable() }
