@@ -127,8 +127,8 @@ export class Project extends Component {
 
     summaryHeader = () => (
         !!this.state.finishDate
-        ? ['#', 'Employee Name', 'Total man-hours']
-        : ['#', 'Employee Name', 'Tracking', 'Total man-hours']
+        ? ['#', 'Employee Name', 'Total tracked time']
+        : ['#', 'Employee Name', 'Tracking', 'Total tracked time']
     );
 
     renderSummaryData = () => {
@@ -163,7 +163,7 @@ export class Project extends Component {
         });
         const footer = ['', 'Totals:', `${totalHours} man-hours`];
         if (!this.state.finishDate)
-            footer.splice(2, 0, `${totalHoursPerDay} man-hours/day`)
+            footer.splice(2, 0, `${totalHoursPerDay} hours/day`)
         return footer;
     };
 
