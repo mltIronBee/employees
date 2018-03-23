@@ -127,8 +127,8 @@ export class Project extends Component {
 
     summaryHeader = () => (
         !!this.state.finishDate
-        ? ['#', 'Employee Name', 'Total man-hours']
-        : ['#', 'Employee Name', 'Tracking', 'Total man-hours']
+        ? ['#', 'Employee Name', 'Total tracked time']
+        : ['#', 'Employee Name', 'Tracking', 'Total tracked time']
     );
 
     renderSummaryData = () => {
@@ -163,7 +163,7 @@ export class Project extends Component {
         });
         const footer = ['', 'Totals:', `${totalHours} man-hours`];
         if (!this.state.finishDate)
-            footer.splice(2, 0, `${totalHoursPerDay} man-hours/day`)
+            footer.splice(2, 0, `${totalHoursPerDay} hours/day`)
         return footer;
     };
 
@@ -293,10 +293,13 @@ export class Project extends Component {
                     this.deleteEmployeesFromProject(data._id)
                 ]))
             .then(result => {
-                this.notification.show('Data is updated');
+                //this.notification.show('Data is updated');
                 this.setState( {succeeded: true}, () => {
-                    setTimeout(() => { browserHistory.push('/projects') }, 3000);
-                });
+                    browserHistory.push({
+                            pathname: this.props.location.state && this.props.location.state.from === 'dashboard' ? '/' : '/projects',
+                            state: { selectedUserId: this.props.location.state && this.props.location.state.from === 'dashboard' ? this.props.location.state.selectedUserId : '' }
+                        }) 
+                    })
             })
             .catch(err => {
                 this.notification.show(isCreating ? 'Creating error!' : 'Updating error!', 'danger');
@@ -358,7 +361,10 @@ export class Project extends Component {
                                           name="reply"
                                           size="big"
                                           style={{cursor: "pointer", float: "left"}}
-                                          onClick={() => { browserHistory.push('/projects') }}>
+                                          onClick={() => { browserHistory.push({
+                                                pathname: this.props.location.state && this.props.location.state.from === 'dashboard' ? '/' : '/projects',
+                                                state: { selectedUserId: this.props.location.state && this.props.location.state.from === 'dashboard' ? this.props.location.state.selectedUserId : '' }
+                                            }) }}>
                                     </Icon>
                                     { !this.state.finishDate &&
                                         <Button color="blue"
@@ -432,7 +438,7 @@ export class Project extends Component {
                                         <label>Project Managers</label>
                                         <ProjectSmallTable 
                                             tableBody={this.renderManagersData()}
-                                            bodyFallback='No project managers has been assigned to this project<' />
+                                            bodyFallback='No project managers has been assigned to this project' />
                                         <br />
                                         <label>Employees</label>
                                         <ProjectSmallTable 

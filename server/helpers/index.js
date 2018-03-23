@@ -13,9 +13,9 @@ export const calculateProjectSummary = (project, employees) => {
 			employee.projectsHistory.filter(proj => 
 				String(proj._id) !== projectId &&
 				!!project.startDate && !!proj.startDate
-				&& (project.finishDate && project.finishDate.getTime() > date.millisecond()
-					|| !project.finishDate && proj.startDate.getTime() < date.millisecond()
-					|| proj.finishDate && proj.finishDate.getTime() >= project.startDate.getTime()))
+				&& (project.finishDate && moment(project.finishDate).isAfter(date)
+					|| !project.finishDate && moment(proj.startDate).isBefore(date)
+					|| proj.finishDate && moment(proj.finishDate).isSameOrAfter(project.startDate)))
 		, '_id')
 	});
 	//Stuff to save 'skip' keyword from deleting
@@ -55,7 +55,7 @@ export const calculateProjectSummary = (project, employees) => {
 		details = [];
 
 		for( let j = 0; j < breakpoints[i].length - 1; j++) {
-			//This is mess. j++ inside next statement doesn't do anything, so  we have this
+			//This is mess. j++ inside next statement doesn't do anything, so we have this
 			if( breakpoints[i][j] === 'skip' )
 				continue;
 
@@ -74,6 +74,7 @@ export const calculateProjectSummary = (project, employees) => {
 			projects.forEach( proj => {
 				projectIsActive(proj, breakpoints[i][j], breakpoints[i][j+1]) && divider++
 			})
+
 			totalWorkHours += daysBetween * SINGLE_PROJECT_WORKHOURS/divider;
 			details.push({
 				leftDate: moment(breakpoints[i][j]).add(1, 'ms').format('YYYY-MM-DD'), 
@@ -120,7 +121,6 @@ const excludeWeekends = dates => {
 			temp = moment(temp).isoWeekday(8).startOf('day');
 		}
 
-
 		return acc.concat(toInsert, nextDate);
 	}, []);
 }
@@ -137,7 +137,7 @@ const prettyPrintDecimals = value =>
 const projectIsActive = (project, left, right) => {
 	const startDate = moment(project.startDate).startOf('day');
 	const finishDate = !!project.finishDate ? moment(project.finishDate).endOf('day') : false;
-	
+
 	return startDate.isSameOrBefore(left)
 	? finishDate && finishDate.isSameOrAfter(right)
 	  && finishDate.isAfter(left) || !finishDate
