@@ -9,6 +9,9 @@
 # production
 /build
 
+# uploaded files
+/public/uploads/*
+
 #config
 config.js
 

@@ -1,14 +1,15 @@
 import React from 'react';
 import { Table } from 'semantic-ui-react';
 
-const ProjectSmallTable = (props) => {
-	const { tableHeaders, tableBody, tableFooters, bodyFallback } = props;
-	
+const ProjectSmallTable = props => {
+	const { tableHeaders, tableBody, tableFooters, bodyFallback, onSelect, onDeselect, ...tableProps } = props;
+
 	return (
 		<div className={tableBody.length > 10 ? 'table-body-projects' : ''} >
 			<Table  singleLine
 			compact
 			fixed
+			{...tableProps}
 			size='small'
 			color='blue'>
 				{ tableHeaders && tableHeaders.length &&
@@ -23,12 +24,12 @@ const ProjectSmallTable = (props) => {
 				<Table.Body>
 					{ tableBody && tableBody.length
 						? tableBody.map( (row, index) =>
-							<Table.Row key={index}>
+							<Table.Row key={index} onMouseOver={ () => onSelect && onSelect(index)} onMouseOut={onDeselect}>
 								<Table.Cell width={2}>{index+1}</Table.Cell>
 								{ row.map( (cell, j)  => {
 										const { item, ...rest } = cell;
 										return (
-											<Table.Cell 
+											<Table.Cell
 												key={j}
 												{...rest} >
 												{item}
@@ -37,14 +38,14 @@ const ProjectSmallTable = (props) => {
 								}
 							</Table.Row>)
 						: <Table.Row>
-							<Table.Cell>{bodyFallback}</Table.Cell>	
+							<Table.Cell>{bodyFallback}</Table.Cell>
 						</Table.Row>
 					}
 				</Table.Body>
 				<Table.Footer fullWidth>
 					{ tableFooters && tableFooters.length &&
 						<Table.Row>
-							{ tableFooters.map( (item, index) => 
+							{ tableFooters.map( (item, index) =>
 								<Table.HeaderCell key={index}>
 									{item}
 								</Table.HeaderCell>

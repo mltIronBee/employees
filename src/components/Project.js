@@ -9,6 +9,8 @@ import AddPMPopup from './AddPMPopup';
 import { DeleteEmployeeModal } from './DeleteEmployeeModal';
 import ProjectSmallTable from './ProjectSmallTable';
 import moment from 'moment';
+import LineChart from './LineChart';
+
 export class Project extends Component {
 
     state = {
@@ -26,6 +28,7 @@ export class Project extends Component {
         projectManagers: [],
         currentManagerId: '',
         activeItem: 'personel',
+        highlightedEmployee: '',
         succeeded: false        //Notification is failing to show due to transitioning to anoter
     };                          //page. Adding delay and this variable to disable controls and ensure
                                 //that notification is being shown
@@ -298,7 +301,7 @@ export class Project extends Component {
                     browserHistory.push({
                             pathname: this.props.location.state && this.props.location.state.from === 'dashboard' ? '/' : '/projects',
                             state: { selectedUserId: this.props.location.state && this.props.location.state.from === 'dashboard' ? this.props.location.state.selectedUserId : '' }
-                        }) 
+                        })
                     })
             })
             .catch(err => {
@@ -312,28 +315,42 @@ export class Project extends Component {
     parseSummaryData = () => {
         if ( this.state.summary ) {
             const parsed = this.state.summary.map( report => {
-                const dates = [];
-                const hoursPerProject = [];
+                const data = [];
                 for( let i = 0; i < report.details.length; i++ ) {
                     const detail = report.details[i];
+                    //Make sure, that looking at stats on weekend won't let us go out of bounds
+                    if( detail.rightDate === 'skip' && i+1 >= report.details.length )
+                        break;
+
                     const rightDate = detail.rightDate !== 'skip' ? moment(detail.rightDate) : moment(report.details[i+1].leftDate);
                     const skipping = detail.rightDate === 'skip';
                     let leftDate = moment(detail.leftDate);
                     let daysBetween = rightDate.diff(leftDate, 'days');
                     while( daysBetween > 0 ) {
-                        dates.push(moment(leftDate).format('YYYY-MM-DD'));
-                        skipping ? hoursPerProject.push(0) : hoursPerProject.push(detail.hoursPerProject);
+                        data.push({xVal: moment(leftDate).format('YYYY-MM-DD'), yVal: skipping ? 0 : detail.hoursPerProject});
                         leftDate.add(1, 'd');
                         daysBetween = rightDate.diff(leftDate, 'days');
                     }
                 }
-                return { id: report.employeeName, xVal: dates, yVal: hoursPerProject };
+                return { id: report.employeeName, values: data };
             });
             return parsed;
         }
 
         return [];
     };
+
+    onSummarySelect = index => {
+        this.setState({
+            highlightedEmployee: this.state.summary[index].employeeName
+        });
+    }
+
+    onSummaryDeselect = () => {
+        this.setState({
+            highlightedEmployee: ''
+        });
+    }
 
     componentWillUnmount() {
         document.removeEventListener('keyup', this.onModalActions);
@@ -422,12 +439,12 @@ export class Project extends Component {
                                     </span>
                                 }
                                 <Menu tabular>
-                                    <Menu.Item name='personel' 
+                                    <Menu.Item name='personel'
                                         active={this.state.activeItem === 'personel'}
                                         onClick={this.handleTabClick} >
                                         Presonel
                                     </Menu.Item>
-                                    {!this.state.isCreating && <Menu.Item name='summary'
+                                    {(!this.state.isCreating && !!this.state.startDate) && <Menu.Item name='summary'
                                         active={this.state.activeItem === 'summary'}
                                         onClick={this.handleTabClick} >
                                         Summary
@@ -436,12 +453,12 @@ export class Project extends Component {
                                 { this.state.activeItem === 'personel' &&
                                     <div>
                                         <label>Project Managers</label>
-                                        <ProjectSmallTable 
+                                        <ProjectSmallTable
                                             tableBody={this.renderManagersData()}
                                             bodyFallback='No project managers has been assigned to this project' />
                                         <br />
                                         <label>Employees</label>
-                                        <ProjectSmallTable 
+                                        <ProjectSmallTable
                                             tableBody={this.renderEmployeesData()}
                                             bodyFallback='No employees yet' />
                                     </div>
@@ -450,11 +467,20 @@ export class Project extends Component {
                                     this.state.activeItem === 'summary' &&
                                     <div>
                                         <label>Project summary</label>
-                                        <ProjectSmallTable 
+                                        <ProjectSmallTable
+                                            selectable
                                             tableBody={this.renderSummaryData()}
                                             bodyFallback='Cannot get project summary'
                                             tableHeaders={this.summaryHeader()}
-                                            tableFooters={this.summaryFooter()} />
+                                            tableFooters={this.summaryFooter()}
+                                            onSelect={this.onSummarySelect}
+                                            onDeselect={ () => this.onSummaryDeselect()} />
+                                        <LineChart
+                                            margin={{top: 20, right: 80, bottom: 30, left: 50}}
+                                            data={this.parseSummaryData()}
+                                            xLabel='Date'
+                                            yLabel='Hours/day'
+                                            highlighted={this.state.highlightedEmployee} />
                                     </div>
                                 }
                             </Form.Field>
