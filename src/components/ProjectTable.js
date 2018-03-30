@@ -201,7 +201,7 @@ export class ProjectTable extends Component {
                 onClick={ e => this.handleSort('managers') } >
                 Project Managers
             </Table.HeaderCell>
-            <Table.HeaderCell 
+            <Table.HeaderCell
                 sorted={this.state.column === 'employees' ? this.state.direction : null}
                 onClick={ e => this.handleSort('employees') } >
                 Project Employees
@@ -252,8 +252,8 @@ export class ProjectTable extends Component {
                         }
                     </Table.Cell>
                 ),
-                actions: {collapsing: true, content: (
-                    <Table.Cell key={ index + 7 }>
+                actions: (
+                    <Table.Cell key={ index + 7 } collapsing>
                         <Link to={{ pathname: '/project', query: { id: project._id } }}>
                             <Icon name="edit"
                                   size="large"
@@ -265,7 +265,7 @@ export class ProjectTable extends Component {
                               color="red"
                               onClick={ () => { this.setState({ isModalOpened: true, currentProjectId: project._id })} } />
                     </Table.Cell>
-                )}
+                )
             }))
             : [{ index: 'No projects yet' }]
     };
@@ -301,7 +301,7 @@ export class ProjectTable extends Component {
     getStringOfNameProjects = projects => {
         const res = [];
         projects.forEach( id => {
-            const item = this.state.projects.find( project => 
+            const item = this.state.projects.find( project =>
                 project._id === id )
             item && res.push(item.name)
         });
@@ -371,7 +371,7 @@ export class ProjectTable extends Component {
             key: 0
         }];
         const items = [];
-        
+
         this.state.projects.forEach( project => {
             if( project[field] ) {
                 project[field].forEach( item => {
@@ -409,7 +409,7 @@ export class ProjectTable extends Component {
 
     filterTable = () => {
         const filtered = this.state.projects
-            .filter( project => 
+            .filter( project =>
                 this.filterManagers(project) && this.filterEmployees(project)
             );
 
@@ -418,7 +418,7 @@ export class ProjectTable extends Component {
 
     filterManagers = project => {
         return this.state.managerFirstName !== '' && this.state.managerLastName
-            ? project.managers && project.managers.length 
+            ? project.managers && project.managers.length
             && project.managers.find( manager => manager.firstName.includes(this.state.managerFirstName) && manager.lastName.includes(this.state.managerLastName))
             : true
     };
