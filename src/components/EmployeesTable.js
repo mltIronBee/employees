@@ -9,8 +9,7 @@ export const EmployeesTable = props => (
                              onDelete={ props.onEmployeeDelete }
                              entity={ props.entity }/>
         <Grid.Column width={16}>
-            <Table singleLine
-                   sortable
+            <Table sortable
                    color="blue"
                    headerRow={ props.headerRow }
                    footerRow={ props.footerRow }

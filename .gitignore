@@ -10,7 +10,7 @@
 /build
 
 # uploaded files
-/public/uploads/*
+/public/uploads
 
 #config
 config.js

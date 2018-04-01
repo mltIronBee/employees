@@ -12,7 +12,7 @@ export const findByLogin = login => {
     return User.findOne({ login });
 };
 
-export const initializeDb = () => 
+export const initializeDb = () =>
     findByLogin('admin')
         .then(user => !user
             ? new User({
@@ -43,7 +43,7 @@ export const getAllUsers = adminLogin =>
         .then(([ users, userEmployees ]) => {
             //Added list=, so delete user.password will actually work
             //instead of exposing password
-            const list = users.map((user, index) => 
+            const list = users.map((user, index) =>
                 Object.assign({}, user.toObject(), { employees: userEmployees[index] }));
 
             return list.filter(user => {
@@ -116,7 +116,7 @@ export const updateEmployeeData = (id, data) =>
             position: data.position,
             startedAt: data.startedAt,
             readyForTransition: data.readyForTransition,
-            image: data.image,
+            imageUrl: data.imageUrl,
             skills: data.skills || [],
             projects: data.projects || [],
             projectsHistory: data.projectsHistory || [],
@@ -178,7 +178,7 @@ export const getManagersForProject = project => {
                 return isProjectManager(employee)
                 && !project.managers.map( pm =>  pm._id.toString() ).includes(employee._id.toString())}
             )
-            : employees.filter( employee => 
+            : employees.filter( employee =>
                 isProjectManager(employee)
             )
 
@@ -209,7 +209,7 @@ export const getProjectById = id =>
 
 export const getProjectByIdWithEmployees = projectId =>
     Promise.all([getProjectById(projectId), getEmployeesForProject(projectId)])
-        .then(([ project, allEmployees ]) => 
+        .then(([ project, allEmployees ]) =>
             Promise.all( [project, allEmployees.filter( e => !isProjectManager(e) ), getManagersForProject(project)] ))
         .then(([ project, allEmployees, allManagers ]) => ({ project, allEmployees, allManagers }));
 
@@ -217,4 +217,3 @@ export const getAllEmployeesForProject = () =>
     Promise.all([
         Employee.find().lean().exec()])
     .then( ([allEmployees]) => ({allEmployees: allEmployees.filter( e => !isProjectManager(e) ), allManagers: allEmployees.filter( e => isProjectManager(e) )}) );
-

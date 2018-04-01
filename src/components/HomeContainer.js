@@ -355,7 +355,7 @@ export class HomeContainer extends Component {
                 firstName: { key: index+2, content: employee.firstName },
                 lastName: { key: index+3, content: employee.lastName },
                 projects: { key: index+4, content: this.getStringOfNameProjects(employee.projects) },
-                position: { key: index+5, content: employee.position },
+                position: { key: index+5, collapsing: true, content: employee.position },
                 readyForTransition: (
                     <Table.Cell key={index + 6} className='ready-for-transition-table'>
                         <Checkbox key={index + 7}
@@ -370,9 +370,9 @@ export class HomeContainer extends Component {
                                    onClick={e => this.switchAvailableMarker(employee)}/>
                     </Table.Cell>
                 ),
-                startedAt: employee.startedAt,
+                startedAt: {key: index+10,collapsing: true, content: employee.startedAt},
                 actions: (
-                    <Table.Cell key={ index + 11 }>
+                    <Table.Cell key={ index + 11 } collapsing>
                         <UserPopup user={ employee }
                                    projects={this.getStringOfNameProjects(employee.projects)}
                                    key={ index + 12 }
@@ -398,7 +398,7 @@ export class HomeContainer extends Component {
         }
     };
 
-    getStringOfNameProjects = projects => 
+    getStringOfNameProjects = projects =>
         projects && projects.length
         ? projects.map( (project, i) => (
             <span key={project._id} >

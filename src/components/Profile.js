@@ -278,11 +278,11 @@ export class Profile extends Component {
                                           name="reply"
                                           size="big"
                                           style={{cursor: "pointer", float: "left"}}
-                                          onClick={() => { 
+                                          onClick={() => {
                                             browserHistory.push({
                                                 pathname: this.props.location.state && this.props.location.state.from === 'projects' ? '/projects' : '/',
                                                 state: { selectedUserId: this.props.location.state && this.props.location.state.from !== 'projects' ? this.props.location.state.selectedUserId : '' }
-                                            }) 
+                                            })
                                         }}>
                                     </Icon>
                                     {
