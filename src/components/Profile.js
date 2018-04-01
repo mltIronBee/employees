@@ -311,7 +311,7 @@ export class Profile extends Component {
                                             <label className="label-image" htmlFor="image" >
                                                 <Icon name="download" /> Download profile image
                                             </label>
-                                            <input type="file" className="upload-image" id="image" onChange={this.onUpload}/>
+                                            <input type="file" className="upload-image" id="image" accept="image/*" onChange={this.onUpload}/>
                                         </div>
                                     )
                                 }

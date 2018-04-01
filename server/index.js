@@ -26,6 +26,9 @@ const storage = multer.diskStorage({
         callback(null, './public/uploads');
     },
     filename(req, file, callback) {
+        console.log(file.mimetype.substring(0, 5));
+        if( file.mimetype.split('/')[0] !== 'image' )
+            return callback(new Error('Invalid MIME type'));
         currentUploadedImageName = `${random.generate()}.${mime.extension(file.mimetype)}`;
         callback(null, currentUploadedImageName);
     }
@@ -57,6 +60,7 @@ const uniqueLoginMiddleware = (req, res, next) =>
         );
 
 app.use(express.static('build'));
+app.use(express.static('public'));
 
 const apiRoutes = express.Router();
 
